@@ -2,16 +2,16 @@ import {useEffect,useMemo,useState} from 'react'
 import {BookOpen,Brain,ChartNoAxesCombined,Check,ChevronRight,Headphones,Home,Volume2} from 'lucide-react'
 type Q={id:string;kind:string;level:number;q:string;passage?:string;opts:string[];a:number;answerText?:string;why:string;topic:string;word?:string}
 const bank:Q[]=[
-{id:'1',kind:'單字',level:1,q:'The new design can _____ cooling performance.',opts:['improve','arrive','borrow','happen'],a:0,why:'improve 是動詞，表示改善、提升。常見搭配：improve performance（提升效能）。',topic:'improve',word:'improve'},
-{id:'2',kind:'文法',level:1,q:'She _____ to work every day.',opts:['go','goes','going','gone'],a:1,why:'主詞 She 是第三人稱單數，現在簡單式的一般動詞要加 -s 或 -es。',topic:'現在簡單式'},
-{id:'3',kind:'單字',level:1,q:'Please _____ the test result before sending the report.',opts:['confirm','reduce','design','install'],a:0,why:'confirm 是確認；confirm the result 是「確認結果」的常見搭配。',topic:'confirm',word:'confirm'},
-{id:'4',kind:'文法',level:1,q:'We have _____ the cold plate test.',opts:['complete','completed','completing','completes'],a:1,why:'現在完成式結構為 have/has + 過去分詞。complete 的過去分詞是 completed。',topic:'現在完成式'},
-{id:'5',kind:'單字',level:1,q:'The pressure drop is higher than _____.',opts:['expected','expect','expecting','expects'],a:0,why:'than expected 表示「比預期更高」；expected 在此作形容詞使用。',topic:'expected',word:'expected'},
-{id:'6',kind:'文法',level:1,q:'The engineer is responsible _____ the test.',opts:['for','at','on','with'],a:0,why:'be responsible for + 名詞／動名詞，表示「負責……」。',topic:'介系詞搭配'},
-{id:'7',kind:'閱讀',level:1,q:'What is the main purpose of the message?',passage:'The thermal team will test the new cold plate on Friday. Please send the updated drawing before Thursday afternoon. The test report will be shared with the customer next week.',opts:['To cancel a test','To request an updated drawing','To announce a holiday','To change the customer'],a:1,why:'第二句 Please send the updated drawing before Thursday afternoon，表示要求在週四下午前提供更新圖面。',topic:'閱讀主旨'},
-{id:'8',kind:'單字',level:1,q:'We need to _____ the fin spacing to reduce pressure drop.',opts:['optimize','attend','invite','belong'],a:0,why:'optimize 是最佳化；optimize the fin spacing 是「最佳化鰭片間距」。',topic:'optimize',word:'optimize'},
-{id:'9',kind:'文法',level:1,q:'The samples _____ yesterday.',opts:['ship','shipped','were shipped','are shipping'],a:2,why:'samples 是被運送，且時間是 yesterday，因此使用一般過去式被動語態 were + 過去分詞。',topic:'被動語態'},
-{id:'10',kind:'單字',level:1,q:'The report provides a detailed _____.',opts:['analysis','analyze','analyzing','analyzed'],a:0,why:'a detailed 後面需要名詞。analysis 是分析（名詞）；analyze 是動詞。',topic:'詞性判斷',word:'analysis'},
+{id:'1',kind:'單字',level:1,q:'I _____ a student.',opts:['am','is','are','be'],a:0,why:'I 搭配 be 動詞 am，表示「我是學生」。',topic:'be 動詞'}
+{id:'2',kind:'文法',level:1,q:'He _____ my friend.',opts:['am','is','are','be'],a:1,why:'He 是第三人稱單數，be 動詞使用 is。',topic:'be 動詞'}
+{id:'3',kind:'單字',level:1,q:'What is the opposite of “big”?',opts:['small','long','tall','old'],a:0,why:'small 是 big 的相反詞，表示小的。',topic:'反義詞',word:'small'}
+{id:'4',kind:'文法',level:1,q:'They _____ soccer after school.',opts:['plays','play','playing','played'],a:1,why:'They 是複數主詞，現在簡單式使用 play。',topic:'現在簡單式'}
+{id:'5',kind:'單字',level:1,q:'I drink a glass of _____ every morning.',opts:['milk','chair','book','shirt'],a:0,why:'milk 是牛奶，drink milk 是常見搭配。',topic:'生活單字',word:'milk'}
+{id:'6',kind:'文法',level:1,q:'There _____ two cats in the room.',opts:['is','am','are','be'],a:2,why:'two cats 是複數，There are 用來表示「有……」。',topic:'There be'}
+{id:'7',kind:'閱讀',level:1,q:'What does Amy do on Sunday?',passage:'Amy is a junior high school student. She likes music. Every Sunday, she goes to the park with her brother and plays badminton.',opts:['She studies at the library','She plays badminton','She watches a movie','She visits her teacher'],a:1,why:'文章最後一句提到她和哥哥去公園打羽毛球。',topic:'閱讀主旨'}
+{id:'8',kind:'單字',level:1,q:'My father drives a _____ to work.',opts:['car','banana','window','water'],a:0,why:'car 是汽車；drive a car 表示開車。',topic:'生活單字',word:'car'}
+{id:'9',kind:'文法',level:1,q:'We _____ TV last night.',opts:['watch','watches','watched','watching'],a:2,why:'last night 是過去時間，watch 的過去式是 watched。',topic:'過去簡單式'}
+{id:'10',kind:'單字',level:1,q:'The weather is very _____. Let’s go swimming.',opts:['hot','hungry','young','busy'],a:0,why:'hot 表示炎熱；天氣很熱適合去游泳。',topic:'生活形容詞',word:'hot'}
 {id:'11',kind:'文法',level:2,q:'If the flow rate increases, the pressure drop usually _____.',opts:['increase','increases','increased','increasing'],a:1,why:'一般事實使用現在簡單式。主詞 the pressure drop 為第三人稱單數，因此用 increases。',topic:'主詞動詞一致'},
 {id:'12',kind:'單字',level:2,q:'The team is currently _____ the new pump.',opts:['evaluate','evaluated','evaluating','evaluation'],a:2,why:'is currently + V-ing，表示目前正在進行的動作。evaluate 是評估。',topic:'evaluate',word:'evaluate'},
 {id:'13',kind:'文法',level:2,q:'The new design is more efficient _____ the previous one.',opts:['then','than','that','as'],a:1,why:'比較級 more efficient 後面使用 than，表示「比……更有效率」。',topic:'比較級'},
