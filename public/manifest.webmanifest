@@ -1,0 +1,9 @@
+{
+  "name": "English for Ming",
+  "short_name": "English",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#102a43",
+  "description": "個人英文學習與複習"
+}
