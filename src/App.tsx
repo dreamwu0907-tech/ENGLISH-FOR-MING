@@ -166,8 +166,8 @@ export default function App(){
   setResult(rs);setPage('result')
   const h={...history};rs.forEach(({q:item,correct:ok})=>{const old=h[item.id]||{streak:0,tries:0,due:Date.now(),mastered:false};const streak=ok?old.streak+1:0;h[item.id]={streak,tries:old.tries+1,due:Date.now()+(ok?[1,3,7,14,30][Math.min(streak-1,4)]:0)*86400000,mastered:streak>=5}})
   const elapsed=Math.min(1200,Math.max(0,Math.round((Date.now()-(sessionStart||Date.now()))/1000))),day=new Date().toDateString()
-  const allCorrect=rs.length>0&&rs.every(x=>x.correct)
-  setStore((s:any)=>({...s,history:h,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress:{...(s.chapterProgress||{}),[chapterId]:{...(s.chapterProgress||{})[chapterId],[module]:allCorrect||((s.chapterProgress||{})[chapterId]||{})[module]||false}}}))
+  const passed=rs.length>0&&rs.filter(x=>x.correct).length/rs.length>=0.7
+  setStore((s:any)=>({...s,history:h,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress:{...(s.chapterProgress||{}),[chapterId]:{...(s.chapterProgress||{})[chapterId],[module]:passed||((s.chapterProgress||{})[chapterId]||{})[module]||false}}}))
  }
  const startReview=()=>{const pool=due.length?due:bank.filter(x=>history[x.id]&&!history[x.id].mastered);if(!pool.length){alert('目前沒有待複習題目。');return}setList(pool.slice(0,20));setModule('integrated');setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setPage('quiz')}
  return <div className="shell">
