@@ -48,3 +48,18 @@
 .next-chapter{margin-top:10px}
 
 .dialogue-lines{display:flex;flex-direction:column;gap:12px;margin-top:12px}.dialogue-line{padding:10px 11px;background:#f7fafc;border:1px solid #e7eef4;border-radius:10px;display:flex;flex-direction:column;gap:5px}.dialogue-line b{font-size:13px;color:#203c51;font-weight:650}.dialogue-line span,.dialogue-result-zh{font-size:12px;color:#648096;line-height:1.6}.dialogue-question-zh{margin:13px 0 0;padding-top:10px;border-top:1px solid #e7eef4;color:#41647d;font-size:12px;font-weight:650}
+
+/* Adaptive daily mission */
+.daily-mission-card{background:#fff;border:1px solid #dce8f1;border-radius:17px;padding:15px}
+.daily-mission-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.daily-mission-top small{font-size:9px;letter-spacing:1.1px;color:#2676a8;font-weight:800}
+.daily-mission-top h2{font-size:18px;margin:5px 0}
+.daily-mission-top p{font-size:11px;color:#718494;line-height:1.6;margin:0}
+.daily-mission-top>span{font-size:13px;font-weight:800;color:#1769aa;background:#eaf4fb;border-radius:10px;padding:8px;white-space:nowrap}
+.daily-mission-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:13px 0}
+.daily-mission-item{background:#f6f9fc;border:1px solid #e7eef4;border-radius:11px;padding:10px}
+.daily-mission-item b{font-size:12px;color:#23465f}
+.daily-mission-item small{float:right;font-size:10px;color:#2676a8}
+.daily-mission-item p{font-size:10px;line-height:1.55;color:#788b9a;margin:6px 0 0}
+.daily-mission-bottom{display:flex;flex-direction:column;gap:9px}
+.daily-mission-bottom>span{font-size:10px;line-height:1.5;color:#748695}
