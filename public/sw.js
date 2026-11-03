@@ -1,4 +1,4 @@
-const CACHE_NAME='english-for-ming-v4';
+const CACHE_NAME='english-for-ming-v5';
 const PRECACHE=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',event=>{
