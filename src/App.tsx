@@ -87,18 +87,29 @@ const dialoguePool=[
 {scene:'辦公室行程',lines:['Woman: Are you available for a meeting tomorrow morning?','Man: I’m afraid I’m busy until ten.','Woman: How about ten thirty?','Man: That works for me. Please send me an invitation.'],question:'When can the man attend the meeting?',opts:['At 9:00','At 9:30','At 10:00','At 10:30'],answer:3,why:'雙方最後確認十點三十分開會。'}
 ]
 function speak(text:string,rate=0.82){
- if(typeof window==='undefined'||!('speechSynthesis'in window)){alert('目前瀏覽器不支援語音播放。');return}
+ if(typeof window==='undefined'||!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){
+  alert('目前瀏覽器不支援語音播放。')
+  return
+ }
  const synth=window.speechSynthesis
- synth.cancel()
- synth.resume()
- const utterance=new SpeechSynthesisUtterance(text)
+ const content=text.trim()
+ if(!content)return
+ // iOS Safari: only cancel when a previous utterance is actually active.
+ // Avoid resume() and explicit voice assignment; let iOS select its system voice
+ // from the en-US language hint.
+ if(synth.speaking||synth.pending)synth.cancel()
+ const utterance=new SpeechSynthesisUtterance(content)
  utterance.lang='en-US'
  utterance.rate=rate
  utterance.pitch=1
- const voices=synth.getVoices()
- const voice=voices.find(v=>v.lang.toLowerCase()==='en-us')||voices.find(v=>v.lang.toLowerCase().startsWith('en-'))
- if(voice) utterance.voice=voice
- utterance.onerror=()=>{console.warn('Speech playback error')}
+ utterance.volume=1
+ utterance.onstart=()=>console.info('Speech playback started')
+ utterance.onend=()=>console.info('Speech playback ended')
+ utterance.onerror=(event)=> {
+  console.warn('Speech playback error:',event.error)
+  alert('語音播放失敗（'+(event.error||'未知原因')+'）。請重新點擊喇叭，若持續發生請回報錯誤訊息。')
+ }
+ // Keep speak() synchronous with the user's tap; iOS Safari may block delayed playback.
  synth.speak(utterance)
 }
 export default function App(){
