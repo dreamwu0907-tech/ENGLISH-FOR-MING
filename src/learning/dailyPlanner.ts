@@ -14,7 +14,7 @@ export function buildDailyMission(bank: PlannerQuestion[], history: PlannerHisto
     const seen = new Set<string>()
     return items.filter(q => !seen.has(q.id) && !!seen.add(q.id)).slice(0, limit)
   }
-  const select = (kind: string, limit: number) => unique([...due.filter(q => q.kind === kind), ...fresh.filter(q => q.kind === kind).sort((a,b) => a.level-b.level)], limit)
+  const select = (kind: string, limit: number) => unique([...due.filter(q => q.kind === kind), ...fresh.filter(q => q.kind === kind)], limit)
   const vocabulary = select('單字', 3)
   const grammar = select('文法', 3)
   const fill = select('填空', 3)
