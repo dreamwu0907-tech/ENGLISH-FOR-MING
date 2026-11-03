@@ -156,23 +156,27 @@ export default function App(){
   const perfect=rs.length>0&&rs.every(x=>x.correct)
   setStore((s:any)=>{
    const mistakes={...(s.chapterMistakes||{})}
+   const mistakeQuestions={...(s.chapterMistakeQuestions||{})}
+   const dialoguePending=[...((mistakeQuestions[chapterId]||[]) as Q[])]
    if(module==='review'&&reviewForChapter){
     const pending=new Set(mistakes[chapterId]||[])
-    rs.forEach(({q:item,correct:ok})=>{if(ok)pending.delete(item.id);else pending.add(item.id)})
+    rs.forEach(({q:item,correct:ok})=>{if(ok)pending.delete(item.id);else pending.add(item.id);if(item.kind==='情境對話'){const at=dialoguePending.findIndex(x=>x.id===item.id);if(ok&&at>=0)dialoguePending.splice(at,1);else if(!ok&&at<0)dialoguePending.push(item)}})
     mistakes[chapterId]=[...pending]
+    mistakeQuestions[chapterId]=dialoguePending
    }else if(module!=='review'){
     const pending=new Set(mistakes[chapterId]||[])
-    rs.forEach(({q:item,correct:ok})=>{if(!ok)pending.add(item.id)})
+    rs.forEach(({q:item,correct:ok})=>{if(!ok){pending.add(item.id);if(item.kind==='情境對話'&&!dialoguePending.some(x=>x.id===item.id))dialoguePending.push(item)}})
     mistakes[chapterId]=[...pending]
+    mistakeQuestions[chapterId]=dialoguePending
    }
    const oldChapter=(s.chapterProgress||{})[chapterId]||{}
    const chapterProgress={...(s.chapterProgress||{}),[chapterId]:{...oldChapter,...(module==='review'&&reviewForChapter&&perfect?{reviewPassed:true}:{}),...(module!=='review'?{[module]:passed||oldChapter[module]||false}:{})}}
-   return {...s,history:h,chapterMistakes:mistakes,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress}
+   return {...s,history:h,chapterMistakes:mistakes,chapterMistakeQuestions:mistakeQuestions,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress}
   })
  }
  const startChapterReview=()=>{
   const ids=chapterMistakeIds(chapterId)
-  const pool=ids.map((id:string)=>bank.find(x=>x.id===id)).filter(Boolean) as Q[]
+  const pool=[...ids.map((id:string)=>bank.find(x=>x.id===id)).filter(Boolean) as Q[],...(((store.chapterMistakeQuestions||{})[chapterId]||[]) as Q[])]
   if(!pool.length){alert('本章目前沒有需要訂正的錯題。');return}
   setModule('review');setReviewForChapter(true);setList(pool.slice(0,20));setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setDialogue(null);setSelectedWord(null);setPage('quiz')
  }
@@ -189,7 +193,7 @@ export default function App(){
      <button onClick={()=>begin('fill')}><BookOpen/><b>填空</b><small>單字與句型應用</small><em>{chapterStatus(chapterId).fill?'已完成':'開始練習'}</em></button>
      <button onClick={()=>begin('integrated')}><Brain/><b>綜合練習</b><small>混合題型與閱讀理解</small><em>{chapterStatus(chapterId).integrated?'已完成':'開始練習'}</em></button>
      <button onClick={()=>begin('scenario')}><BookOpen/><b>情境對話</b><small>Read and understand English dialogues</small><em>{chapterStatus(chapterId).scenario?'已完成':'開始練習'}</em></button>
-     <button onClick={startChapterReview}><Brain/><b>錯題練習</b><small>本章待訂正 {chapterMistakeIds(chapterId).length} 題；全對即可解鎖下一章</small><em>{chapterStatus(chapterId).reviewPassed?'已達 100%':'開始訂正'}</em></button>
+     <button onClick={startChapterReview}><Brain/><b>錯題練習</b><small>本章待訂正 {chapterMistakeIds(chapterId).length+(((store.chapterMistakeQuestions||{})[chapterId]||[]).length)} 題；全對即可解鎖下一章</small><em>{chapterStatus(chapterId).reviewPassed?'已達 100%':'開始訂正'}</em></button>
     </div>
     <section className="chapter-list"><h2>課程章節</h2>{chapters.map(c=>{const unlocked=isUnlocked(c.id),done=chapterCompleted(c.id);return <button key={c.id} className={'chapter-row '+(c.id===chapterId?'selected':'')} disabled={!unlocked} onClick={()=>setChapterId(c.id)}><span className="chapter-number">{String(c.id).padStart(2,'0')}</span><span className="chapter-info"><b>{c.title}</b><small>{c.subtitle}</small></span><span className="chapter-state">{done?'已完成':unlocked?'可學習':'🔒 未解鎖'}</span></button>})}</section>
     <div className="stats"><article><small>累積學習時間</small><b>{studyMinutes}</b><small>分鐘</small></article><article><small>已熟悉題目</small><b>{mastered}</b><small>連續答對 5 次</small></article></div>
