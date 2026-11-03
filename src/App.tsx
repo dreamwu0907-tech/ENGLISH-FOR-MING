@@ -66,7 +66,7 @@ const bank:Q[]=[
 {id:'74',kind:'文法',level:2,q:'The manager _____ the project update every Monday.',opts:['send','sends','sending','sent'],a:1,why:'every Monday 表示規律習慣；主詞 The manager 是第三人稱單數，因此使用 sends。',topic:'現在簡單式'},
 {id:'75',kind:'文法',level:2,q:'The report _____ by the engineering team yesterday.',opts:['completed','was completed','has complete','is completing'],a:1,why:'報告是被完成，使用被動語態；yesterday 指過去，因此用 was completed。',topic:'被動語態'},
 {id:'76',kind:'文法',level:2,q:'We have worked with this supplier _____ 2022.',opts:['for','since','during','from'],a:1,why:'since 後面接明確的起始時間點，2022 是起始年份。',topic:'現在完成式'},
-{id:'80',kind:'閱讀',level:1,q:'What time does boarding begin?',passage:'Flight AB218 to Osaka is scheduled to depart at 10:30 a.m. Boarding will begin 40 minutes before departure at Gate 12.',opts:['9:30 a.m.','9:50 a.m.','10:00 a.m.','10:40 a.m.'],a:2,why:'起飛時間是 10:30，登機提前 40 分鐘開始，因此是 9:50 a.m.' ,topic:'閱讀：機場公告'},
+{id:'80',kind:'閱讀',level:1,q:'What time does boarding begin?',passage:'Flight AB218 to Osaka is scheduled to depart at 10:30 a.m. Boarding will begin 40 minutes before departure at Gate 12.',opts:['9:30 a.m.','9:50 a.m.','10:00 a.m.','10:40 a.m.'],a:1,why:'起飛時間是 10:30，登機提前 40 分鐘開始，因此是 9:50 a.m.' ,topic:'閱讀：機場公告'},
 {id:'81',kind:'閱讀',level:1,q:'Where should passengers go to board the train?',passage:'The express train to Hualien will leave at 2:15 p.m. from platform six. Please arrive at the platform at least five minutes before departure.',opts:['Platform four','Platform five','Platform six','Platform seven'],a:2,why:'公告指出列車從 platform six 出發。',topic:'閱讀：交通資訊'}
 ]
 type H={streak:number;tries:number;due:number;mastered:boolean}
@@ -205,7 +205,7 @@ export default function App(){
      <button onClick={()=>begin('fill')}><BookOpen/><b>填空</b><small>單字與句型應用</small><em>{chapterStatus(chapterId).fill?'已完成':'開始練習'}</em></button>
      <button onClick={()=>begin('integrated')}><Brain/><b>綜合練習</b><small>混合題型與閱讀理解</small><em>{chapterStatus(chapterId).integrated?'已完成':'開始練習'}</em></button>
      <button onClick={()=>begin('scenario')}><BookOpen/><b>情境對話</b><small>Read and understand English dialogues</small><em>{chapterStatus(chapterId).scenario?'已完成':'開始練習'}</em></button>
-     <button onClick={startChapterReview}><Brain/><b>錯題練習</b><small>本章待訂正 {chapterMistakeIds(chapterId).length+(((store.chapterMistakeQuestions||{})[chapterId]||[]).length)} 題；全對即可解鎖下一章</small><em>{chapterStatus(chapterId).reviewPassed?'已達 100%':'開始訂正'}</em></button>
+     <button onClick={startChapterReview}><Brain/><b>錯題練習</b><small>本章待訂正 {chapterMistakeIds(chapterId).filter((id:string)=>bank.some(q=>q.id===id)).length+(((store.chapterMistakeQuestions||{})[chapterId]||[]).length)} 題；全對即可解鎖下一章</small><em>{chapterStatus(chapterId).reviewPassed?'已達 100%':'開始訂正'}</em></button>
     </div>
     <section className="chapter-list"><h2>課程章節</h2>{chapters.map(c=>{const unlocked=isUnlocked(c.id),done=chapterCompleted(c.id);return <button key={c.id} className={'chapter-row '+(c.id===chapterId?'selected':'')} disabled={!unlocked} onClick={()=>setChapterId(c.id)}><span className="chapter-number">{String(c.id).padStart(2,'0')}</span><span className="chapter-info"><b>{c.title}</b><small>{c.subtitle}</small></span><span className="chapter-state">{done?'已完成':unlocked?'可學習':'🔒 未解鎖'}</span></button>})}</section>
     <div className="stats"><article><small>累積學習時間</small><b>{studyMinutes}</b><small>分鐘</small></article><article><small>已熟悉題目</small><b>{mastered}</b><small>連續答對 5 次</small></article></div>
