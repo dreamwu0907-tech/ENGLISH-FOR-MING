@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from 'react'
-import {BookOpen,Brain,ChartNoAxesCombined,Check,ChevronRight,Home,Volume2} from 'lucide-react'
+import {BookOpen,Brain,ChartNoAxesCombined,Check,ChevronRight,Home} from 'lucide-react'
 type Q={id:string;kind:string;level:number;q:string;passage?:string;opts:string[];a:number;answerText?:string;meaning?:string;why:string;topic:string;word?:string}
 const bank:Q[]=[
 {id:'1',kind:'單字',level:1,q:'I _____ a student.',opts:['am','is','are','be'],a:0,why:'I 搭配 be 動詞 am，表示「我是學生」。',topic:'be 動詞'},
@@ -47,16 +47,7 @@ const bank:Q[]=[
 {id:'43',kind:'填空',level:3,q:'Please contact the sales _____.',opts:[],a:-1,answerText:'department',meaning:'部門',why:'department 是部門，常見於公司組織與職場情境。',topic:'職場',word:'department'},
 {id:'44',kind:'填空',level:3,q:'All the safety _____ must be checked.',opts:[],a:-1,answerText:'equipment',meaning:'設備',why:'equipment 是設備，通常為不可數名詞。',topic:'職場科技',word:'equipment'},
 {id:'45',kind:'填空',level:3,q:'The flight was canceled because of a long _____.',opts:[],a:-1,answerText:'delay',meaning:'延誤',why:'delay 是延誤；常見於航班、交貨與專案情境。',topic:'多益生活',word:'delay'},
-{id:'46',kind:'情境對話',level:1,q:'What time does the store open?',passage:'The store opens at nine a.m. every weekday.',opts:['8:00 a.m.','9:00 a.m.','10:00 a.m.','11:00 a.m.'],a:1,why:'聽力內容提到店家平日早上九點開門。',topic:'聽力：時間'},
-{id:'47',kind:'情境對話',level:1,q:'Where will the speakers meet?',passage:'Let’s meet in front of the station at six thirty.',opts:['At the office','At the station','At the restaurant','At the airport'],a:1,why:'對話提到在車站前方碰面。',topic:'聽力：地點'},
-{id:'48',kind:'情境對話',level:2,q:'Why is the meeting postponed?',passage:'The manager is still traveling, so the meeting has been moved to Friday afternoon.',opts:['The room is unavailable','The manager is traveling','The report is incomplete','The customer canceled'],a:1,why:'主管仍在出差，因此會議延到星期五下午。',topic:'聽力：原因'},
-{id:'49',kind:'情境對話',level:2,q:'What does the man need to do?',passage:'Please send the updated test report to the customer before noon.',opts:['Call the supplier','Book a meeting room','Send the test report','Prepare a new sample'],a:2,why:'對話要求他中午前將更新後的測試報告寄給客戶。',topic:'聽力：行動'},
-{id:'50',kind:'情境對話',level:1,q:'How will the woman travel to work?',passage:'My car is being repaired, so I will take the bus to work this week.',opts:['By car','By train','By bus','By taxi'],a:2,why:'她的車正在維修，因此這週會搭公車上班。',topic:'聽力：交通'},
-{id:'51',kind:'情境對話',level:1,q:'What is the weather forecast?',passage:'It will rain this afternoon, so remember to bring an umbrella.',opts:['Sunny','Rainy','Snowy','Windy'],a:1,why:'內容提醒下午會下雨，要記得帶雨傘。',topic:'聽力：天氣'},
-{id:'52',kind:'情境對話',level:2,q:'When is the deadline?',passage:'Please submit your application by the end of the day on Thursday.',opts:['Wednesday morning','Thursday evening','Friday morning','Next Monday'],a:1,why:'by the end of the day on Thursday 表示星期四當天結束前。',topic:'聽力：期限'},
-{id:'53',kind:'情境對話',level:2,q:'What does the woman want to order?',passage:'I would like a small coffee and a cheese sandwich, please.',opts:['Tea and cake','A large coffee','A small coffee and sandwich','Juice and salad'],a:2,why:'她點了一杯小杯咖啡和起司三明治。',topic:'聽力：點餐'},
-{id:'54',kind:'情境對話',level:2,q:'Why is the customer calling?',passage:'I am calling to ask whether my order can be delivered before Friday.',opts:['To cancel an order','To ask about delivery','To request a refund','To change an address'],a:1,why:'客戶來電詢問訂單能否在星期五前送達。',topic:'聽力：目的'},
-{id:'55',kind:'情境對話',level:3,q:'What will the engineering team do next?',passage:'The initial test results look acceptable. The team will repeat the test at a higher flow rate tomorrow.',opts:['Release the product today','Repeat the test at higher flow','Change the customer','Stop the project'],a:1,why:'團隊明天會以更高流量重新測試。',topic:'聽力：工作流程'},
+
 {id:'56',kind:'閱讀',level:1,q:'What does the notice ask visitors to do?',passage:'NOTICE: The library will close at 5 p.m. today for maintenance. Please return all books before leaving.',opts:['Buy a new book','Return books before leaving','Visit tomorrow morning','Pay a late fee'],a:1,why:'公告要求訪客離開前歸還所有書籍。',topic:'閱讀：公告'},
 {id:'57',kind:'閱讀',level:1,q:'Where can people buy tickets?',passage:'Tickets for the city museum are available online or at the front desk. Children under six can enter for free.',opts:['At the train station','At the front desk or online','At the school','By phone only'],a:1,why:'文章指出可在線上或服務櫃台購票。',topic:'閱讀：資訊查找'},
 {id:'58',kind:'閱讀',level:1,q:'What is included with the hotel room?',passage:'The room rate includes breakfast and free Wi-Fi. Parking is available for an additional fee.',opts:['Free parking','Lunch','Breakfast and Wi-Fi','Airport transportation'],a:2,why:'房價包含早餐和免費 Wi-Fi，停車需額外付費。',topic:'閱讀：細節'},
@@ -93,50 +84,8 @@ const dialogueTranslations:Record<string,string[]>={
  '飯店入住':['男子：你好，我用 Wu 這個名字訂了房。','女子：歡迎。可以看一下您的護照嗎？','男子：當然。早餐有包含在房價內嗎？','女子：有。早餐供應時間是六點半到十點。'],
  '辦公室行程':['女子：你明天上午有空開會嗎？','男子：恐怕十點以前我都很忙。','女子：十點半如何？','男子：可以。請寄會議邀請給我。']
 }
-let speechPrimed=false
 let activeSpeech:SpeechSynthesisUtterance|null=null
 
-function speak(text:string,rate=0.82){
- if(typeof window==='undefined'||!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){
-  alert('目前瀏覽器不支援語音播放。')
-  return
- }
- const content=text.trim()
- if(!content)return
- const synth=window.speechSynthesis
-
- // iOS Safari may require speech synthesis to be initialized directly by a user gesture.
- // Prime it silently on the first tap, then enqueue the requested speech in the same gesture.
- if(!speechPrimed){
-  const primer=new SpeechSynthesisUtterance('準備')
-  primer.lang='en-US'
-  primer.volume=0
-  primer.rate=10
-  primer.onstart=()=>{speechPrimed=true}
-  primer.onend=()=>{speechPrimed=true}
-  primer.onerror=()=>{speechPrimed=true}
-  synth.speak(primer)
-  speechPrimed=true
- }
-
- const utterance=new SpeechSynthesisUtterance(content)
- utterance.lang='en-US'
- utterance.rate=rate
- utterance.pitch=1
- utterance.volume=1
- activeSpeech=utterance
- utterance.onstart=()=>console.info('Speech playback started')
- utterance.onend=()=>{if(activeSpeech===utterance)activeSpeech=null}
- utterance.onerror=(event)=>{
-  console.warn('Speech playback error:',event.error)
-  if(activeSpeech===utterance)activeSpeech=null
-  if(event.error!=='canceled'&&event.error!=='interrupted'){
-   alert('語音播放失敗（'+(event.error||'未知原因')+'）。請重新點擊喇叭，若持續發生請回報錯誤訊息。')
-  }
- }
- // Keep the real utterance call synchronous with the button tap; do not wait for primer callbacks.
- synth.speak(utterance)
-}
 export default function App(){
  const [store,setStore]=useState<any>(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})
  const [page,setPage]=useState<'home'|'quiz'|'result'|'progress'|'vocab'>('home')
@@ -153,10 +102,10 @@ export default function App(){
  const [selectedWord,setSelectedWord]=useState<{word:string;meaning:string;example:string}|null>(null)
  const history:Record<string,H>=store.history||{}
  useEffect(()=>{localStorage.setItem(KEY,JSON.stringify(store))},[store])
- useEffect(()=>{if('speechSynthesis'in window){const synth=window.speechSynthesis;const load=()=>synth.getVoices();load();synth.addEventListener?.('voiceschanged',load);return()=>synth.removeEventListener?.('voiceschanged',load)}},[])
+ 
  const chapter=chapters.find(c=>c.id===chapterId)||chapters[0]
  const progress=store.chapterProgress||{}
- const chapterStatus=(id:number)=>{const p=progress[id]||{};return {...p,scenario:p.scenario??p.listening}}
+ const chapterStatus=(id:number)=>progress[id]||{}
  const isUnlocked=(id:number)=>id===1||chapters.slice(0,id-1).every(c=>['grammar','fill','integrated','scenario'].every(k=>chapterStatus(c.id)[k]))
  const completedModules=['grammar','fill','integrated','scenario'].filter(k=>chapterStatus(chapterId)[k]).length
  const savedWords:SavedWord[]=store.vocab||[]
@@ -206,12 +155,12 @@ export default function App(){
  }
  const startReview=()=>{const pool=due.length?due:bank.filter(x=>history[x.id]&&!history[x.id].mastered);if(!pool.length){alert('目前沒有待複習題目。');return}setList(pool.slice(0,20));setModule('integrated');setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setPage('quiz')}
  return <div className="shell">
-  <header><div className="logo">EN</div><div><b>ENGLISH FOR MING</b><small>Chapter-based English Learning</small></div><button className="sound" aria-label="測試英文語音" onClick={()=>speak('Welcome to your English learning journey.')}><Volume2/></button></header>
+  <header><div className="logo">EN</div><div><b>ENGLISH FOR MING</b><small>Chapter-based English Learning</small></div></header>
   <main>
    {page==='home'&&<div className="stack">
     <section className="goal-card"><div><small>YOUR LEARNING PATH</small><h2>TOEIC 800</h2><p>先建立生活英文基礎，再逐步進入職場與多益情境。</p></div><div className="milestones"><b>基礎</b><span>550</span><span>650</span><span>750</span><span>800</span></div></section>
     <section className="chapter-card"><div className="chapter-heading"><div><small>YOUR CURRENT CHAPTER</small><h1>Chapter {chapter.id}｜{chapter.title}</h1><p>{chapter.subtitle}・{chapter.description}</p></div><span className="chapter-count">{completedModules}/4</span></div><div className="goal-progress"><i style={{width:(completedModules/4*100)+'%'}}/></div><p className="chapter-hint">每個單元正確率達 70% 即算完成；四個單元都完成後即可進入下一章。</p>{completedModules===4&&chapterId<chapters.length&&<button className="primary wide next-chapter" onClick={()=>setChapterId(chapterId+1)}>前往下一章：{chapters[chapterId].title} <ChevronRight/></button>}</section>
-    <section className="home-vocab"><div className="home-vocab-head"><div><label>CHAPTER VOCABULARY</label><h2>本章核心單字</h2><p>單字、例句與中文翻譯；點擊喇叭即可播放美式英文。</p></div><span>{vocabWords.length} 個</span></div><div className="chapter-vocab-list">{vocabWords.map((word,i)=>{const text=(word.q||'').replace('_____ ',(word.answerText||'')+' ');return <article className="chapter-vocab-item" key={word.id}><div className="vocab-title"><b>{word.answerText}</b><span>{word.meaning}</span><button className="audio" onClick={()=>speak(word.answerText||'')} aria-label="播放單字"><Volume2/></button></div><p className="example-en">{text}</p><p className="example-zh">{exampleTranslations[word.answerText||'']||'請依照本句情境理解句意。'}</p><button className="audio example-audio" onClick={()=>speak(text)}><Volume2/>播放例句</button></article>})}</div></section>
+    <section className="home-vocab"><div className="home-vocab-head"><div><label>CHAPTER VOCABULARY</label><h2>本章核心單字</h2><p>單字、例句與中文翻譯。</p></div><span>{vocabWords.length} 個</span></div><div className="chapter-vocab-list">{vocabWords.map((word,i)=>{const text=(word.q||'').replace('_____ ',(word.answerText||'')+' ');return <article className="chapter-vocab-item" key={word.id}><div className="vocab-title"><b>{word.answerText}</b><span>{word.meaning}</span></div><p className="example-en">{text}</p><p className="example-zh">{exampleTranslations[word.answerText||'']||'請依照本句情境理解句意。'}</p></article>})}</div></section>
     <h2>本章練習</h2><div className="tiles chapter-tiles">
      <button onClick={()=>begin('grammar')}><BookOpen/><b>文法</b><small>句型與文法觀念</small><em>{chapterStatus(chapterId).grammar?'已完成':'開始練習'}</em></button>
      <button onClick={()=>begin('fill')}><BookOpen/><b>填空</b><small>單字與句型應用</small><em>{chapterStatus(chapterId).fill?'已完成':'開始練習'}</em></button>
@@ -225,16 +174,16 @@ export default function App(){
    {page==='quiz'&&q&&<div className="stack">
     <div className="qtop"><button className="link" onClick={()=>setPage('home')}>← 返回章節</button><span>{idx+1} / {list.length}</span></div><div className="track"><i style={{width:((idx+1)/list.length*100)+'%'}}/></div>
     <div><span className="pill">{module==='grammar'?'文法':module==='fill'?'填空':module==='integrated'?'綜合練習':'情境對話'}</span><span className="pill muted">Chapter {chapterId}</span></div>
-    {q.kind==='情境對話'&&dialogue&&<section className="passage"><div className="passagehead">SITUATION DIALOGUE｜{dialogue.scene}</div><p className="listen-note">先閱讀英文對話與中文意思，再回答情境理解問題。</p><div className="dialogue-lines">{dialogue.lines.map((line:string,i:number)=><div className="dialogue-line" key={i}><b>{line}</b><span>{(dialogueTranslations[dialogue.scene]||[])[i]||''}</span></div>)}</div><p className="dialogue-question-zh">問題意思：{dialogue.questionZh}</p></section>}
-    {q.kind!=='情境對話'&&q.kind!=='聽力'&&q.passage&&<section className="passage"><div className="passagehead">READING PASSAGE</div>{q.passage.split(/(\b[\w'-]+\b)/g).map((part,i)=>{const meaning=dictionary[part.toLowerCase()];return meaning?<button key={i} className="passage-word" onClick={()=>markWord(part)}>{part}</button>:<span key={i}>{part}</span>})}</section>}
+    {q.kind==='情境對話'&&dialogue&&<section className="passage"><div className="passagehead">SITUATION DIALOGUE｜{dialogue.scene}</div><p className="dialogue-note">先閱讀英文對話與中文意思，再回答情境理解問題。</p><div className="dialogue-lines">{dialogue.lines.map((line:string,i:number)=><div className="dialogue-line" key={i}><b>{line}</b><span>{(dialogueTranslations[dialogue.scene]||[])[i]||''}</span></div>)}</div><p className="dialogue-question-zh">問題意思：{dialogue.questionZh}</p></section>}
+    {q.kind!=='情境對話'&&q.passage&&<section className="passage"><div className="passagehead">READING PASSAGE</div>{q.passage.split(/(\b[\w'-]+\b)/g).map((part,i)=>{const meaning=dictionary[part.toLowerCase()];return meaning?<button key={i} className="passage-word" onClick={()=>markWord(part)}>{part}</button>:<span key={i}>{part}</span>})}</section>}
     {selectedWord&&<section className="word-detail"><div><small>WORD DETAILS</small><h3>{selectedWord.word}</h3><p>{selectedWord.meaning}</p></div><button className="audio" onClick={addWord}>加入單字本</button></section>}
-    <section className="question"><small>QUESTION {idx+1}</small><h2>{q.q}</h2>{module!=='scenario'&&<button className="audio" onClick={()=>speak(q.q)}><Volume2/>聽題目</button>}</section>
+    <section className="question"><small>QUESTION {idx+1}</small><h2>{q.q}</h2>{module!=='scenario'&&}</section>
     {q.kind==='填空'?<div className="blank-answer"><label>請輸入英文答案</label><p className="meaning-hint">中文提示：{q.meaning}</p><input value={inputAnswer} onChange={e=>setInputAnswer(e.target.value)} placeholder="Type your answer" autoComplete="off"/></div>:<div className="options">{q.opts.map((o,i)=><button className={choice===i?'chosen':''} onClick={()=>setChoice(i)} key={o}><span>{'ABCD'[i]}</span>{o}{choice===i&&<Check/>}</button>)}</div>}
     <div className="actions"><button className="link" onClick={()=>{setChoice(null);setInputAnswer('')}}>清除答案</button><button className="primary" onClick={()=>finishQuestion(q.kind==='填空'?(inputAnswer.trim()||null):choice)}>{idx+1===list.length?'提交答案':'下一題'} <ChevronRight/></button></div><small className="hint">跳過會記為錯題，系統會安排複習。</small>
    </div>}
-   {page==='result'&&result&&<div className="stack"><section className="score"><div className="ring">{Math.round(result.filter(x=>x.correct).length/result.length*100)}<small>%</small></div><h1>練習完成</h1><p>答對 {result.filter(x=>x.correct).length} 題・共 {result.length} 題</p></section>{result.map((r,i)=><article className="explain" key={r.q.id}><div className="explainhead">第 {i+1} 題・{r.q.kind}<b className={r.correct?'green':'red'}>{r.correct?'答對':'答錯／跳過'}</b></div><h3>{r.q.q}</h3>{r.q.kind==='情境對話'&&<><p><b>對話逐字稿：</b></p>{(r.q.passage||'').split('\n').map((line:string,i:number)=><p key={i}>{line}<br/><span className="dialogue-result-zh">{(dialogueTranslations[dialogue?.scene]||[])[i]||''}</span></p>)}</>}{r.q.kind!=='情境對話'&&r.q.kind!=='聽力'&&r.q.passage&&<p>{r.q.passage}</p>}<p><b>正確答案：</b>{r.q.answerText||r.q.opts[r.q.a]}</p>{r.q.why}</article>)}<button className="primary wide" onClick={()=>setPage('home')}>返回章節</button></div>}
+   {page==='result'&&result&&<div className="stack"><section className="score"><div className="ring">{Math.round(result.filter(x=>x.correct).length/result.length*100)}<small>%</small></div><h1>練習完成</h1><p>答對 {result.filter(x=>x.correct).length} 題・共 {result.length} 題</p></section>{result.map((r,i)=><article className="explain" key={r.q.id}><div className="explainhead">第 {i+1} 題・{r.q.kind}<b className={r.correct?'green':'red'}>{r.correct?'答對':'答錯／跳過'}</b></div><h3>{r.q.q}</h3>{r.q.kind==='情境對話'&&<><p><b>對話逐字稿：</b></p>{(r.q.passage||'').split('\n').map((line:string,i:number)=><p key={i}>{line}<br/><span className="dialogue-result-zh">{(dialogueTranslations[dialogue?.scene]||[])[i]||''}</span></p>)}</>}{r.q.kind!=='情境對話'&&r.q.passage&&<p>{r.q.passage}</p>}<p><b>正確答案：</b>{r.q.answerText||r.q.opts[r.q.a]}</p>{r.q.why}</article>)}<button className="primary wide" onClick={()=>setPage('home')}>返回章節</button></div>}
    {page==='progress'&&<div className="stack"><div className="row"><h1>學習分析</h1><button className="link" onClick={()=>setPage('home')}>返回首頁</button></div><section className="scorecard"><small>TOEIC 學習目標</small><h2>550 → 800</h2><p>目前紀錄反映練習表現，不等同正式多益分數。</p></section><div className="stats"><article><small>完成單元</small><b>{store.completed||0}</b></article><article><small>累積答題</small><b>{answered}</b></article><article><small>累積正確率</small><b>{answered?Math.round(correct/answered*100):0}%</b></article><article><small>已熟悉題目</small><b>{mastered}</b></article></div><h2>章節完成狀態</h2>{chapters.map(c=><div className="mastery" key={c.id}><b>{c.title}</b><span>{['grammar','fill','integrated','scenario'].filter(k=>chapterStatus(c.id)[k]).length}/4 單元</span></div>)}<h2>題目熟悉度</h2>{bank.filter(item=>history[item.id]).map(item=><div className="mastery" key={item.id}><div><b>{item.topic}</b><small>{item.kind}・作答 {history[item.id].tries} 次</small></div><span>{history[item.id].mastered?'已熟悉':'連續答對 '+history[item.id].streak+'/5'}</span></div>)}</div>}
-   {page==='vocab'&&<div className="stack"><div className="row"><h1>個人單字本</h1><button className="link" onClick={()=>setPage('home')}>返回首頁</button></div>{savedWords.length?savedWords.map(w=><article className="saved-word" key={w.word}><div><b>{w.word}</b><p>{w.meaning}</p><small>{w.example}</small></div><button className="audio" onClick={()=>speak(w.word)}><Volume2/></button></article>):<aside>目前還沒有收藏的單字。</aside>}</div>}
+   {page==='vocab'&&<div className="stack"><div className="row"><h1>個人單字本</h1><button className="link" onClick={()=>setPage('home')}>返回首頁</button></div>{savedWords.length?savedWords.map(w=><article className="saved-word" key={w.word}><div><b>{w.word}</b><p>{w.meaning}</p><small>{w.example}</small></div></article>):<aside>目前還沒有收藏的單字。</aside>}</div>}
   </main>
   <nav><button className={page==='home'?'active':''} onClick={()=>setPage('home')}><Home/>章節</button><button className={page==='progress'?'active':''} onClick={()=>setPage('progress')}><ChartNoAxesCombined/>分析</button></nav>
  </div>
