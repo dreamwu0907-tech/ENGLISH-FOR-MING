@@ -86,48 +86,8 @@ const dialoguePool=[
 {scene:'飯店入住',lines:['Man: Hello. I have a reservation under the name Wu.','Woman: Welcome. May I see your passport, please?','Man: Of course. Is breakfast included?','Woman: Yes. Breakfast is served from six thirty to ten.'],question:'What does the man want to know?',opts:['The Wi-Fi password','The breakfast time','The room price','The checkout date'],answer:1,why:'他詢問早餐是否包含，櫃台回答早餐供應時間。'},
 {scene:'辦公室行程',lines:['Woman: Are you available for a meeting tomorrow morning?','Man: I’m afraid I’m busy until ten.','Woman: How about ten thirty?','Man: That works for me. Please send me an invitation.'],question:'When can the man attend the meeting?',opts:['At 9:00','At 9:30','At 10:00','At 10:30'],answer:3,why:'雙方最後確認十點三十分開會。'}
 ]
-let speechQueue:{text:string;rate:number}[]=[]
-let speechBusy=false
-let speechSynth:SpeechSynthesis|null=null
-
-function playNextSpeech(){
- if(typeof window==='undefined'||!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){
-  speechBusy=false
-  speechQueue=[]
-  return
- }
- const synth=speechSynth||window.speechSynthesis
- speechSynth=synth
- const next=speechQueue.shift()
- if(!next){speechBusy=false;return}
- const utterance=new SpeechSynthesisUtterance(next.text)
- utterance.lang='en-US'
- utterance.rate=next.rate
- utterance.pitch=1
- utterance.volume=1
- let finished=false
- const finish=()=>{
-  if(finished)return
-  finished=true
-  speechBusy=false
-  playNextSpeech()
- }
- utterance.onstart=()=>console.info('Speech playback started')
- utterance.onend=finish
- utterance.onerror=(event)=>{
-  console.warn('Speech playback error:',event.error)
-  // iOS Safari may report "canceled" while replacing or interrupting an utterance.
-  // Treat it as a queue interruption, not as a fatal playback error.
-  if(event.error!=='canceled'){
-   alert('語音播放失敗（'+(event.error||'未知原因')+'）。請重新點擊喇叭，若持續發生請回報錯誤訊息。')
-  }
-  finish()
- }
- speechBusy=true
- // Do not call cancel() or resume(): both can interrupt iOS Safari speech playback.
- // Start synchronously from the original tap whenever the queue is idle.
- synth.speak(utterance)
-}
+let speechPrimed=false
+let activeSpeech:SpeechSynthesisUtterance|null=null
 
 function speak(text:string,rate=0.82){
  if(typeof window==='undefined'||!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){
@@ -136,8 +96,39 @@ function speak(text:string,rate=0.82){
  }
  const content=text.trim()
  if(!content)return
- speechQueue.push({text:content,rate})
- if(!speechBusy)playNextSpeech()
+ const synth=window.speechSynthesis
+
+ // iOS Safari may require speech synthesis to be initialized directly by a user gesture.
+ // Prime it silently on the first tap, then enqueue the requested speech in the same gesture.
+ if(!speechPrimed){
+  const primer=new SpeechSynthesisUtterance('準備')
+  primer.lang='en-US'
+  primer.volume=0
+  primer.rate=10
+  primer.onstart=()=>{speechPrimed=true}
+  primer.onend=()=>{speechPrimed=true}
+  primer.onerror=()=>{speechPrimed=true}
+  synth.speak(primer)
+  speechPrimed=true
+ }
+
+ const utterance=new SpeechSynthesisUtterance(content)
+ utterance.lang='en-US'
+ utterance.rate=rate
+ utterance.pitch=1
+ utterance.volume=1
+ activeSpeech=utterance
+ utterance.onstart=()=>console.info('Speech playback started')
+ utterance.onend=()=>{if(activeSpeech===utterance)activeSpeech=null}
+ utterance.onerror=(event)=>{
+  console.warn('Speech playback error:',event.error)
+  if(activeSpeech===utterance)activeSpeech=null
+  if(event.error!=='canceled'&&event.error!=='interrupted'){
+   alert('語音播放失敗（'+(event.error||'未知原因')+'）。請重新點擊喇叭，若持續發生請回報錯誤訊息。')
+  }
+ }
+ // Keep the real utterance call synchronous with the button tap; do not wait for primer callbacks.
+ synth.speak(utterance)
 }
 export default function App(){
  const [store,setStore]=useState<any>(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})
