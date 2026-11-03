@@ -1,5 +1,7 @@
 import {useEffect,useMemo,useState} from 'react'
 import {BookOpen,Brain,ChartNoAxesCombined,Check,ChevronRight,Home} from 'lucide-react'
+import { learningStages } from './data/curriculum'
+import { buildDailyMission } from './learning/dailyPlanner'
 type Q={id:string;kind:string;level:number;q:string;passage?:string;opts:string[];a:number;answerText?:string;meaning?:string;why:string;topic:string;word?:string}
 const bank:Q[]=[
 {id:'1',kind:'單字',level:1,q:'I _____ a student.',opts:['am','is','are','be'],a:0,why:'I 搭配 be 動詞 am，表示「我是學生」。',topic:'be 動詞'},
@@ -112,6 +114,9 @@ export default function App(){
  useEffect(()=>{localStorage.setItem(KEY,JSON.stringify(store))},[store])
  
  const chapter=chapters.find(c=>c.id===chapterId)||chapters[0]
+ const currentStageId=Math.min(4,chapterId)
+ const currentStage=learningStages[currentStageId-1]
+ const dailyMission=useMemo(()=>buildDailyMission(bank,history,currentStageId),[store,currentStageId])
  const progress=store.chapterProgress||{}
  const chapterStatus=(id:number)=>progress[id]||{}
  const chapterCompleted=(id:number)=>['grammar','fill','integrated','scenario'].every(k=>chapterStatus(id)[k])||!!chapterStatus(id).reviewPassed
@@ -186,6 +191,11 @@ export default function App(){
    return {...s,history:h,chapterMistakes:mistakes,chapterMistakeQuestions:mistakeQuestions,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress}
   })
  }
+ const startDailyMission=()=>{
+  const pool=dailyMission.questionIds.map(id=>bank.find(q=>q.id===id)).filter(Boolean) as Q[]
+  if(!pool.length){alert('目前題庫中沒有可安排的核心任務，請先進行自由練習。');return}
+  setModule('daily' as any);setReviewForChapter(false);setList(pool);setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setDialogue(null);setSelectedWord(null);setPage('quiz')
+ }
  const startChapterReview=()=>{
   const ids=chapterMistakeIds(chapterId)
   const pool=[...ids.map((id:string)=>bank.find(x=>x.id===id)).filter(Boolean) as Q[],...(((store.chapterMistakeQuestions||{})[chapterId]||[]) as Q[])]
@@ -199,6 +209,7 @@ export default function App(){
    {page==='home'&&<div className="stack">
     <section className="goal-card"><div><small>YOUR LEARNING PATH</small><h2>TOEIC 800</h2><p>先建立生活英文基礎，再逐步進入職場與多益情境。</p></div><div className="milestones"><b>基礎</b><span>550</span><span>650</span><span>750</span><span>800</span></div></section>
     <section className="chapter-card"><div className="chapter-heading"><div><small>YOUR CURRENT CHAPTER</small><h1>Chapter {chapter.id}｜{chapter.title}</h1><p>{chapter.subtitle}・{chapter.description}</p></div><span className="chapter-count">{completedModules}/4</span></div><div className="goal-progress"><i style={{width:(completedModules/4*100)+'%'}}/></div><p className="chapter-hint">各單元正確率達 70% 可完成；或完成本章錯題練習並達 100%，也能解鎖下一章。</p>{chapterReady&&chapterId<chapters.length&&<button className="primary wide next-chapter" onClick={()=>setChapterId(chapterId+1)}>前往下一章：{chapters[chapterId].title} <ChevronRight/></button>}</section>
+    <section className="daily-mission-card"><div className="daily-mission-top"><div><small>ADAPTIVE DAILY MISSION</small><h2>今日核心任務</h2><p>{currentStage.code}・{currentStage.title}｜依照目前熟悉度自動安排</p></div><span>{dailyMission.questionIds.length} 題</span></div><div className="daily-mission-items">{dailyMission.items.map(item=><div className="daily-mission-item" key={item.skill}><b>{item.title}</b><small>{item.questionIds.length} 題</small><p>{item.reason}</p></div>)}</div><div className="daily-mission-bottom"><span>建議約 {dailyMission.estimatedMinutes} 分鐘，完成後仍可自由繼續學習。</span><button className="primary wide" onClick={startDailyMission}>開始今日任務 <ChevronRight/></button></div></section>
     <section className="home-vocab"><div className="home-vocab-head"><div><label>CHAPTER VOCABULARY</label><h2>本章核心單字</h2><p>單字、例句與中文翻譯。</p></div><span>{vocabWords.length} 個</span></div><div className="chapter-vocab-list">{vocabWords.map((word,i)=>{const text=(word.q||'').replace('_____ ',(word.answerText||'')+' ');return <article className="chapter-vocab-item" key={word.id}><div className="vocab-title"><b>{word.answerText}</b><span>{word.meaning}</span></div><p className="example-en">{text}</p><p className="example-zh">{exampleTranslations[word.answerText||'']||'請依照本句情境理解句意。'}</p></article>})}</div></section>
     <h2>本章練習</h2><div className="tiles chapter-tiles">
      <button onClick={()=>begin('grammar')}><BookOpen/><b>文法</b><small>句型與文法觀念</small><em>{chapterStatus(chapterId).grammar?'已完成':'開始練習'}</em></button>
@@ -213,7 +224,7 @@ export default function App(){
    </div>}
    {page==='quiz'&&q&&<div className="stack">
     <div className="qtop"><button className="link" onClick={()=>setPage('home')}>← 返回章節</button><span>{idx+1} / {list.length}</span></div><div className="track"><i style={{width:((idx+1)/list.length*100)+'%'}}/></div>
-    <div><span className="pill">{module==='grammar'?'文法':module==='fill'?'填空':module==='integrated'?'綜合練習':module==='review'?'錯題練習':'情境對話'}</span><span className="pill muted">Chapter {chapterId}</span></div>
+    <div><span className="pill">{module==='grammar'?'文法':module==='fill'?'填空':module==='integrated'?'綜合練習':module==='review'?'錯題練習':module==='daily'?'今日任務':'情境對話'}</span><span className="pill muted">Chapter {chapterId}</span></div>
     {q.kind==='情境對話'&&dialogue&&<section className="passage"><div className="passagehead">SITUATION DIALOGUE｜{dialogue.scene}</div><p className="dialogue-note">Read the dialogue and choose the best answer.</p><div className="dialogue-lines">{dialogue.lines.map((line:string,i:number)=><div className="dialogue-line" key={i}><b>{line}</b></div>)}</div></section>}
     {q.kind!=='情境對話'&&q.passage&&<section className="passage"><div className="passagehead">READING PASSAGE</div>{q.passage.split(/(\b[\w'-]+\b)/g).map((part,i)=>{const meaning=dictionary[part.toLowerCase()];return meaning?<button key={i} className="passage-word" onClick={()=>markWord(part)}>{part}</button>:<span key={i}>{part}</span>})}</section>}
     {selectedWord&&<section className="word-detail"><div><small>WORD DETAILS</small><h3>{selectedWord.word}</h3><p>{selectedWord.meaning}</p></div><button className="audio" onClick={addWord}>加入單字本</button></section>}
