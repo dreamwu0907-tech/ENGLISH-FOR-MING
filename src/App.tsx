@@ -159,7 +159,8 @@ export default function App(){
    const mistakeQuestions={...(s.chapterMistakeQuestions||{})}
    const dialoguePending=[...((mistakeQuestions[chapterId]||[]) as Q[])]
    if(module==='review'&&reviewForChapter){
-    const pending=new Set(mistakes[chapterId]||[])
+    const legacy=chapterQuestionIds(chapters.find(x=>x.id===chapterId)||chapters[0]).filter((qid:string)=>history[qid]?.tries>0&&history[qid]?.streak===0)
+    const pending=new Set([...(mistakes[chapterId]||[]),...legacy])
     rs.forEach(({q:item,correct:ok})=>{if(ok)pending.delete(item.id);else pending.add(item.id);if(item.kind==='情境對話'){const at=dialoguePending.findIndex(x=>x.id===item.id);if(ok&&at>=0)dialoguePending.splice(at,1);else if(!ok&&at<0)dialoguePending.push(item)}})
     mistakes[chapterId]=[...pending]
     mistakeQuestions[chapterId]=dialoguePending
@@ -170,7 +171,7 @@ export default function App(){
     mistakeQuestions[chapterId]=dialoguePending
    }
    const oldChapter=(s.chapterProgress||{})[chapterId]||{}
-   const chapterProgress={...(s.chapterProgress||{}),[chapterId]:{...oldChapter,...(module==='review'&&reviewForChapter&&perfect?{reviewPassed:true}:{}),...(module!=='review'?{[module]:passed||oldChapter[module]||false}:{})}}
+   const chapterProgress={...(s.chapterProgress||{}),[chapterId]:{...oldChapter,...(module==='review'&&reviewForChapter&&perfect&&mistakes[chapterId].length===0&&dialoguePending.length===0?{reviewPassed:true}:{}),...(module!=='review'?{[module]:passed||oldChapter[module]||false}:{})}}
    return {...s,history:h,chapterMistakes:mistakes,chapterMistakeQuestions:mistakeQuestions,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress}
   })
  }
