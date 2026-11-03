@@ -9,7 +9,7 @@ export type DailyMission = { stageId: number; items: DailyMissionItem[]; questio
 export function buildDailyMission(bank: PlannerQuestion[], history: PlannerHistory, stageId: number, now = Date.now()): DailyMission {
   const eligible = bank.filter(q => q.level <= Math.min(stageId, 3))
   const due = eligible.filter(q => { const h = history[q.id]; return !!h && !h.mastered && (h.due ?? 0) <= now })
-  const fresh = eligible.filter(q => !history[q.id]?.mastered)
+  const fresh = eligible.filter(q => !history[q.id]?.mastered).sort((a,b) => (history[a.id]?.tries ?? 0) - (history[b.id]?.tries ?? 0) || a.level - b.level)
   const unique = (items: PlannerQuestion[], limit: number) => {
     const seen = new Set<string>()
     return items.filter(q => !seen.has(q.id) && !!seen.add(q.id)).slice(0, limit)
