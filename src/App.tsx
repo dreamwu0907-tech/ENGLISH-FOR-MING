@@ -99,7 +99,7 @@ export default function App(){
  const [store,setStore]=useState<any>(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})
  const [page,setPage]=useState<'home'|'quiz'|'result'|'progress'|'vocab'>('home')
  const [chapterId,setChapterId]=useState(1)
- const [module,setModule]=useState<'grammar'|'fill'|'integrated'|'scenario'|'review'>('grammar')
+ const [module,setModule]=useState<'grammar'|'fill'|'integrated'|'scenario'|'review'|'daily'>('grammar')
  const [list,setList]=useState<Q[]>([])
  const [idx,setIdx]=useState(0)
  const [answers,setAnswers]=useState<(number|string|null)[]>([])
