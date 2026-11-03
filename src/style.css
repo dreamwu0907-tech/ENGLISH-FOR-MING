@@ -44,3 +44,5 @@
 .chapter-state{white-space:nowrap}
 .meaning-hint{font-size:12px;color:#50718a;margin:0}
 @media(max-width:420px){.chapter-heading h1{font-size:17px}.chapter-vocab-item{padding:10px}}
+
+.next-chapter{margin-top:10px}
