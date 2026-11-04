@@ -7,7 +7,7 @@ export type DailyMission = { stageId: number; items: DailyMissionItem[]; questio
 
 /** A suggested core lesson, never a daily time or progress cap. */
 export function buildDailyMission(bank: PlannerQuestion[], history: PlannerHistory, stageId: number, now = Date.now()): DailyMission {
-  const eligible = bank.filter(q => q.level <= Math.min(stageId, 3))
+  const eligible = bank.filter(q => q.level <= Math.min(stageId, 4))
   const due = eligible.filter(q => { const h = history[q.id]; return !!h && !h.mastered && (h.due ?? 0) <= now })
   const fresh = eligible.filter(q => !history[q.id]?.mastered).sort((a,b) => (history[a.id]?.tries ?? 0) - (history[b.id]?.tries ?? 0) || a.level - b.level)
   const unique = (items: PlannerQuestion[], limit: number) => {
