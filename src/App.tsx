@@ -14,7 +14,8 @@ eat:'我通常七點吃早餐。',taller:'我哥哥比我高。',three:'桌上�
 const chapters=[
 {id:1,title:'日常生活',subtitle:'Daily Life',description:'從自我介紹、日常習慣到生活對話，建立英文基礎。',grammar:['2','4','6','9'],fill:['21','22','23','24','25','26','27','28','29','30','31','32','34','35'],integrated:['1','3','5','7','8','10','56','64'],scenario:[]},
 {id:2,title:'交通與旅遊',subtitle:'Travel & Transportation',description:'練習交通、住宿、購物與旅遊時常見的英文。',grammar:['13','16','18'],fill:['33','45','69','70','71','72','73'],integrated:['57','58','80','81'],scenario:[]},
-{id:3,title:'工作與職場',subtitle:'Workplace English',description:'進入會議、工作安排、報告與商務溝通情境。',grammar:['11','74','75','76'],fill:['36','37','38','39','40','41','42','43','44'],integrated:['12','14','15','17','19','20','59','60','61','62','63','65'],scenario:[]}
+{id:3,title:'工作與職場',subtitle:'Workplace English',description:'進入會議、工作安排、報告與商務溝通情境。',grammar:['11','74','75','76'],fill:['36','37','38','39','40','41','42','43','44'],integrated:['12','14','15','17','19','20','59','60','61','62','63','65'],scenario:[]},
+{id:4,title:'TOEIC 入門與商務基礎',subtitle:'TOEIC Foundations',description:'開始進入多益 Part 5 文法與 Part 7 商務閱讀。',grammar:['82','83','84','85'],fill:['86','87','88','89'],integrated:['90','91','92','93'],scenario:[]}
 ]
 const dialoguePool=[
 {scene:'Restaurant Reservation',lines:['Woman: Good evening. I’d like to make a reservation for two.','Man: Certainly. What time would you prefer?','Woman: Around seven thirty, please.','Man: We have a table available at 7:30. May I have your name?','Woman: It’s Ming. Thank you.'],question:'What is the woman calling to do?',opts:['Cancel a reservation','Make a reservation','Order dinner','Ask for directions'],answer:1,why:'She says she would like to make a reservation for two, so she is booking a table.'},
