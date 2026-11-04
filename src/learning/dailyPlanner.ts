@@ -20,12 +20,12 @@ export function buildDailyMission(bank: PlannerQuestion[], history: PlannerHisto
   const fill = select('填空', 3)
   const reading = select('閱讀', 3)
   const review = due.filter(q => !['單字','文法','填空','閱讀'].includes(q.kind)).slice(0, 2)
-  const items: DailyMissionItem[] = [
+  const items: DailyMissionItem[] = ([
     { skill:'vocabulary', title:'核心單字', questionIds:vocabulary.map(q=>q.id), reason:'依照目前程度安排尚未熟悉的高頻字彙。' },
     { skill:'grammar', title:'文法觀念', questionIds:grammar.map(q=>q.id), reason:'循序練習目前程度的文法重點。' },
     { skill:'reading', title:'閱讀與填空', questionIds:[...reading,...fill].map(q=>q.id), reason:'透過短文與句子填空練習理解及應用。' },
     { skill:'review', title:'弱項複習', questionIds:review.map(q=>q.id), reason:'優先安排已到複習時間的弱項。' },
-  ].filter(x=>x.questionIds.length>0)
+  ] as DailyMissionItem[]).filter(x=>x.questionIds.length>0)
   const questionIds = [...new Set(items.flatMap(x=>x.questionIds))]
   return { stageId, items, questionIds, estimatedMinutes:Math.max(5,Math.ceil(questionIds.length*1.4)) }
 }
