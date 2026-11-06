@@ -4,7 +4,7 @@ import {courseStages,courseUnitCount,publishedUnitCount} from './data/courseV3Ro
 import {lessons,getLesson} from './data/courseV3Lessons'
 import {questionBank,questionsForUnit,questionsForConcept,type Question} from './data/courseV3Questions'
 
-type ConceptState={streak:number;lastId:string|null;mastered:boolean;attempts:number}
+type ConceptState={streak:number;recentIds:string[];mastered:boolean;attempts:number}
 type Store={completedUnits:number[];concepts:Record<string,ConceptState>;answered:number;correct:number;studySeconds:number;attempts:number;wrong:number}
 type Page='home'|'lesson'|'quiz'|'result'|'progress'
 type Result={question:Question;answer:string;correct:boolean}
@@ -13,7 +13,7 @@ const emptyStore:Store={completedUnits:[],concepts:{},answered:0,correct:0,study
 const readStore=():Store=>{try{const raw=localStorage.getItem(STORAGE_KEY);return raw?{...emptyStore,...JSON.parse(raw)}:emptyStore}catch{return emptyStore}}
 const normal=(s:string)=>s.trim().toLowerCase().replace(/[.!?]+$/,'')
 const dueConcepts=(store:Store)=>Object.entries(store.concepts).filter(([,v])=>!v.mastered)
-const reviewQuestions=(store:Store,limit=10)=>dueConcepts(store).slice(0,limit).map(([concept,state])=>{const pool=questionsForConcept(concept);return pool.find(q=>q.id!==state.lastId)||pool[0]}).filter(Boolean) as Question[]
+const reviewQuestions=(store:Store,limit=10)=>dueConcepts(store).slice(0,limit).map(([concept,state])=>{const pool=questionsForConcept(concept);const seen=state.recentIds||[];return pool.find(q=>!seen.includes(q.id))||pool[0]}).filter(Boolean) as Question[]
 
 export default function App(){
  const [store,setStore]=useState<Store>(readStore)
@@ -78,7 +78,7 @@ export default function App(){
   <header><div className="logo"><GraduationCap size={22}/></div><div><b>ENGLISH FOR MING</b><small>Junior High → TOEIC 800</small></div><div style={{marginLeft:'auto',fontSize:10,color:'#c9d8e5'}}>V3 COURSE</div></header>
   <main>
   {page==='home'&&<div className="stack">
-   <section className="hero"><label>YOUR ENGLISH ROADMAP</label><h1>從英文基礎，穩定走向 TOEIC 800</h1><p>不設定每日限制。每個單元約 15–20 分鐘，依自己的時間完成；錯誤觀念會持續安排新題複習。</p><button className="primary" onClick={()=>beginUnit(store.completedUnits.length<12?Math.min(12,store.completedUnits.length+1):1)}><BookOpen size={17}/> {store.completedUnits.length?'繼續學習':'開始第一單元'}</button></section>
+   <section className="hero"><label>YOUR ENGLISH ROADMAP</label><h1>從英文基礎，穩定走向 TOEIC 800</h1><p>不設定每日限制。每個單元約 15–20 分鐘，依自己的時間完成；錯誤觀念會持續安排新題複習。</p><button className="primary" onClick={()=>beginUnit(Array.from({length:12},(_,i)=>i+1).find(id=>!store.completedUnits.includes(id))||1)}><BookOpen size={17}/> {store.completedUnits.length?'繼續學習':'開始第一單元'}</button></section>
    <div className="stats">
     <article><small>已完成單元</small><b>{store.completedUnits.length}<small style={{display:'inline',fontSize:12,color:'#8293a2'}}> / 72</small></b></article>
     <article><small>整體答題正確率</small><b>{accuracy}%</b></article>
