@@ -1,83 +1,93 @@
-export type Q={id:string;kind:string;level:number;q:string;passage?:string;opts:string[];a:number;answerText?:string;meaning?:string;why:string;topic:string;word?:string}
-
-export const bank:Q[]=[
-{id:'1',kind:'單字',level:1,q:'I _____ a student.',opts:['am','is','are','be'],a:0,why:'I 搭配 be 動詞 am，表示「我是學生」。',topic:'be 動詞'},
-{id:'2',kind:'文法',level:1,q:'He _____ my friend.',opts:['am','is','are','be'],a:1,why:'He 是第三人稱單數，be 動詞使用 is。',topic:'be 動詞'},
-{id:'3',kind:'單字',level:1,q:'What is the opposite of “big”?',opts:['small','long','tall','old'],a:0,why:'small 是 big 的相反詞，表示小的。',topic:'反義詞',word:'small'},
-{id:'4',kind:'文法',level:1,q:'They _____ soccer after school.',opts:['plays','play','playing','played'],a:1,why:'They 是複數主詞，現在簡單式使用 play。',topic:'現在簡單式'},
-{id:'5',kind:'單字',level:1,q:'I drink a glass of _____ every morning.',opts:['milk','chair','book','shirt'],a:0,why:'milk 是牛奶，drink milk 是常見搭配。',topic:'生活單字',word:'milk'},
-{id:'6',kind:'文法',level:1,q:'There _____ two cats in the room.',opts:['is','am','are','be'],a:2,why:'two cats 是複數，There are 用來表示「有……」。',topic:'There be'},
-{id:'7',kind:'閱讀',level:1,q:'What does Amy do on Sunday?',passage:'Amy is a junior high school student. She likes music. Every Sunday, she goes to the park with her brother and plays badminton.',opts:['She studies at the library','She plays badminton','She watches a movie','She visits her teacher'],a:1,why:'文章最後一句提到她和哥哥去公園打羽毛球。',topic:'閱讀主旨'},
-{id:'8',kind:'單字',level:1,q:'My father drives a _____ to work.',opts:['car','banana','window','water'],a:0,why:'car 是汽車；drive a car 表示開車。',topic:'生活單字',word:'car'},
-{id:'9',kind:'文法',level:1,q:'We _____ TV last night.',opts:['watch','watches','watched','watching'],a:2,why:'last night 是過去時間，watch 的過去式是 watched。',topic:'過去簡單式'},
-{id:'10',kind:'單字',level:1,q:'The weather is very _____. Let’s go swimming.',opts:['hot','hungry','young','busy'],a:0,why:'hot 表示炎熱；天氣很熱適合去游泳。',topic:'生活形容詞',word:'hot'},
-{id:'11',kind:'文法',level:2,q:'If the flow rate increases, the pressure drop usually _____.',opts:['increase','increases','increased','increasing'],a:1,why:'一般事實使用現在簡單式。主詞 the pressure drop 為第三人稱單數，因此用 increases。',topic:'主詞動詞一致'},
-{id:'12',kind:'單字',level:2,q:'The team is currently _____ the new pump.',opts:['evaluate','evaluated','evaluating','evaluation'],a:2,why:'is currently + V-ing，表示目前正在進行的動作。evaluate 是評估。',topic:'evaluate',word:'evaluate'},
-{id:'13',kind:'文法',level:2,q:'The new design is more efficient _____ the previous one.',opts:['then','than','that','as'],a:1,why:'比較級 more efficient 後面使用 than，表示「比……更有效率」。',topic:'比較級'},
-{id:'14',kind:'閱讀',level:2,q:'When will the customer receive the report?',passage:'The engineering team completed the thermal test on Monday. The data is being reviewed now, and the final report is scheduled to be sent to the customer on Wednesday morning.',opts:['Monday','Tuesday morning','Wednesday morning','Friday afternoon'],a:2,why:'最後一句明確指出 final report 將於 Wednesday morning 寄給客戶。',topic:'閱讀細節'},
-{id:'15',kind:'單字',level:2,q:'The engineer identified a potential _____ in the test setup.',opts:['issue','issueing','issued','issues'],a:0,why:'a potential 後面需要單數名詞。issue 是問題、議題。',topic:'issue',word:'issue'},
-{id:'16',kind:'文法',level:2,q:'Neither the pump nor the fans _____ available.',opts:['is','are','be','was'],a:1,why:'neither...nor... 的動詞通常依靠近動詞的主詞決定。fans 是複數，因此用 are。',topic:'neither...nor...'},
-{id:'17',kind:'單字',level:2,q:'Please _____ the two simulation results.',opts:['compare','complete','contain','considering'],a:0,why:'compare A and B / compare A with B，表示比較。',topic:'compare',word:'compare'},
-{id:'18',kind:'文法',level:2,q:'By the time we arrived, the meeting _____.',opts:['starts','has started','had started','starting'],a:2,why:'過去某個時間點之前已完成的動作，使用過去完成式 had + 過去分詞。',topic:'過去完成式'},
-{id:'19',kind:'閱讀',level:2,q:'Why was the delivery delayed?',passage:'The supplier informed us that the copper material did not pass the incoming inspection. A replacement batch is being prepared, so the prototype delivery will be delayed by two days.',opts:['The drawing was incomplete','The pump failed','The copper material failed inspection','The customer changed the schedule'],a:2,why:'原文指出 copper material did not pass the incoming inspection，因此交期延後。',topic:'閱讀因果'},
-{id:'20',kind:'單字',level:2,q:'The test results are _____ with the simulation.',opts:['consistent','consist','consistency','consisting'],a:0,why:'be consistent with 表示「與……一致」。be 動詞後面需要形容詞 consistent。',topic:'consistent',word:'consistent'},
-{id:'21',kind:'填空',level:1,q:'I usually _____ breakfast at seven.',opts:[],a:-1,answerText:'eat',meaning:'吃',why:'eat 是「吃」。eat breakfast 表示吃早餐。',topic:'eat',word:'eat'},
-{id:'22',kind:'填空',level:1,q:'My brother is _____ than me.',opts:[],a:-1,answerText:'taller',meaning:'比較高的',why:'tall 的比較級是 taller，表示「比較高」。',topic:'tall',word:'taller'},
-{id:'23',kind:'填空',level:1,q:'There are _____ apples on the table.',opts:[],a:-1,answerText:'three',meaning:'三',why:'three 是數字 3。There are 後面可接複數名詞。',topic:'three',word:'three'},
-{id:'24',kind:'填空',level:1,q:'Please _____ the door.',opts:[],a:-1,answerText:'close',meaning:'關上',why:'close 是動詞，表示關上。Please + 原形動詞可形成禮貌請求。',topic:'close',word:'close'},
-{id:'25',kind:'填空',level:1,q:'She _____ to school by bus every day.',opts:[],a:-1,answerText:'goes',meaning:'去（第三人稱單數）',why:'主詞 She 是第三人稱單數，現在簡單式 go 要加 -es，變成 goes。',topic:'go',word:'goes'},
-{id:'26',kind:'填空',level:1,q:'We should _____ plastic bottles.',opts:[],a:-1,answerText:'recycle',meaning:'回收',why:'recycle 是回收，常用於環保與垃圾分類。',topic:'環保',word:'recycle'},
-{id:'27',kind:'填空',level:1,q:'There is a lot of _____ on the road today.',opts:[],a:-1,answerText:'traffic',meaning:'交通；車流',why:'traffic 是交通或車流量，常用於描述路況。',topic:'交通',word:'traffic'},
-{id:'28',kind:'填空',level:1,q:'The _____ will be sunny tomorrow.',opts:[],a:-1,answerText:'weather',meaning:'天氣',why:'weather 是天氣，常見於天氣預報。',topic:'生活',word:'weather'},
-{id:'29',kind:'填空',level:1,q:'Eating vegetables helps us stay _____.',opts:[],a:-1,answerText:'healthy',meaning:'健康的',why:'healthy 是形容詞，表示健康的。',topic:'健康',word:'healthy'},
-{id:'30',kind:'填空',level:1,q:'I want to _____ to Japan next year.',opts:[],a:-1,answerText:'travel',meaning:'旅行',why:'travel 是旅行、旅遊。',topic:'旅遊',word:'travel'},
-{id:'31',kind:'填空',level:1,q:'I usually read the news _____.',opts:[],a:-1,answerText:'online',meaning:'線上的',why:'online 表示在線上、透過網路。',topic:'數位生活',word:'online'},
-{id:'32',kind:'填空',level:1,q:'I sent a _____ to my friend.',opts:[],a:-1,answerText:'message',meaning:'訊息',why:'message 是訊息；send a message 表示傳訊息。',topic:'數位生活',word:'message'},
-{id:'33',kind:'填空',level:1,q:'What time will the train _____?',opts:[],a:-1,answerText:'arrive',meaning:'抵達',why:'arrive 是抵達；arrive at/in 表示抵達某地。',topic:'交通旅遊',word:'arrive'},
-{id:'34',kind:'填空',level:1,q:'This movie is very _____ with teenagers.',opts:[],a:-1,answerText:'popular',meaning:'受歡迎的',why:'popular 是受歡迎的、流行的。',topic:'娛樂',word:'popular'},
-{id:'35',kind:'填空',level:1,q:'Getting enough sleep is _____.',opts:[],a:-1,answerText:'important',meaning:'重要的',why:'important 是重要的，常用於表達重要性。',topic:'健康生活',word:'important'},
-{id:'36',kind:'填空',level:2,q:'Solar power is a kind of clean _____.',opts:[],a:-1,answerText:'energy',meaning:'能源；精力',why:'energy 可表示能源或精力；clean energy 是潔淨能源。',topic:'環境科技',word:'energy'},
-{id:'37',kind:'填空',level:2,q:'We should _____ the environment.',opts:[],a:-1,answerText:'protect',meaning:'保護',why:'protect 是保護，常用於環境與安全議題。',topic:'環境',word:'protect'},
-{id:'38',kind:'填空',level:2,q:'We need to _____ plastic waste.',opts:[],a:-1,answerText:'reduce',meaning:'減少',why:'reduce 是減少；reduce waste 表示減少廢棄物。',topic:'環境',word:'reduce'},
-{id:'39',kind:'填空',level:2,q:'Please check the meeting _____.',opts:[],a:-1,answerText:'schedule',meaning:'行程；時程',why:'schedule 是行程或時程，常見於工作與日常安排。',topic:'工作生活',word:'schedule'},
-{id:'40',kind:'填空',level:2,q:'The company plans to _____ new equipment.',opts:[],a:-1,answerText:'purchase',meaning:'購買',why:'purchase 是較正式的「購買」，常見於商務英文。',topic:'商務',word:'purchase'},
-{id:'41',kind:'填空',level:3,q:'Are you _____ for a meeting tomorrow?',opts:[],a:-1,answerText:'available',meaning:'可取得的；有空的',why:'available 可表示有空、可取得，常見於多益通知。',topic:'多益商務',word:'available'},
-{id:'42',kind:'填空',level:3,q:'Please _____ your reservation by email.',opts:[],a:-1,answerText:'confirm',meaning:'確認',why:'confirm 是確認，常見於訂位、預約與商務郵件。',topic:'多益商務',word:'confirm'},
-{id:'43',kind:'填空',level:3,q:'Please contact the sales _____.',opts:[],a:-1,answerText:'department',meaning:'部門',why:'department 是部門，常見於公司組織與職場情境。',topic:'職場',word:'department'},
-{id:'44',kind:'填空',level:3,q:'All the safety _____ must be checked.',opts:[],a:-1,answerText:'equipment',meaning:'設備',why:'equipment 是設備，通常為不可數名詞。',topic:'職場科技',word:'equipment'},
-{id:'45',kind:'填空',level:3,q:'The flight was canceled because of a long _____.',opts:[],a:-1,answerText:'delay',meaning:'延誤',why:'delay 是延誤；常見於航班、交貨與專案情境。',topic:'多益生活',word:'delay'},
-
-{id:'56',kind:'閱讀',level:1,q:'What does the notice ask visitors to do?',passage:'NOTICE: The library will close at 5 p.m. today for maintenance. Please return all books before leaving.',opts:['Buy a new book','Return books before leaving','Visit tomorrow morning','Pay a late fee'],a:1,why:'公告要求訪客離開前歸還所有書籍。',topic:'閱讀：公告'},
-{id:'57',kind:'閱讀',level:1,q:'Where can people buy tickets?',passage:'Tickets for the city museum are available online or at the front desk. Children under six can enter for free.',opts:['At the train station','At the front desk or online','At the school','By phone only'],a:1,why:'文章指出可在線上或服務櫃台購票。',topic:'閱讀：資訊查找'},
-{id:'58',kind:'閱讀',level:1,q:'What is included with the hotel room?',passage:'The room rate includes breakfast and free Wi-Fi. Parking is available for an additional fee.',opts:['Free parking','Lunch','Breakfast and Wi-Fi','Airport transportation'],a:2,why:'房價包含早餐和免費 Wi-Fi，停車需額外付費。',topic:'閱讀：細節'},
-{id:'59',kind:'閱讀',level:2,q:'Why has the workshop been moved?',passage:'Due to the large number of participants, the product training workshop will be held in Conference Room B instead of Room A.',opts:['Room A is too small','The speaker is late','The equipment is broken','The event is canceled'],a:0,why:'參加人數較多，因此改到較大的 B 會議室。',topic:'閱讀：原因'},
-{id:'60',kind:'閱讀',level:2,q:'What should employees do before Friday?',passage:'All employees are asked to complete the online safety course and print the certificate before Friday afternoon.',opts:['Attend a meeting','Submit a travel request','Complete the safety course','Update their passwords'],a:2,why:'員工必須在星期五下午前完成線上安全課程。',topic:'閱讀：指示'},
-{id:'61',kind:'閱讀',level:2,q:'What is the main purpose of the email?',passage:'Dear team, The monthly sales meeting has been moved from Tuesday to Thursday at 10 a.m. Please update your calendars. Best, Linda',opts:['To announce a schedule change','To introduce a new employee','To request sales data','To cancel a meeting'],a:0,why:'郵件主要通知月度銷售會議改期。',topic:'閱讀：主旨'},
-{id:'62',kind:'閱讀',level:3,q:'What can be inferred about the shipment?',passage:'The supplier confirmed that the replacement parts passed inspection this morning. They are expected to leave the factory tomorrow and arrive at our site early next week.',opts:['The parts failed inspection','The shipment has already arrived','The parts will be shipped tomorrow','The supplier canceled the order'],a:2,why:'零件已通過檢驗，預計明天從工廠出貨。',topic:'閱讀：推論'},
-{id:'63',kind:'閱讀',level:3,q:'Which statement is true about the new policy?',passage:'Starting next month, employees may work remotely up to two days per week with manager approval. Requests must be submitted at least three business days in advance.',opts:['Remote work is unlimited','Manager approval is required','Requests can be made on the same day','The policy starts this week'],a:1,why:'新政策明確要求遠端工作須經主管核准。',topic:'閱讀：政策細節'},
-{id:'64',kind:'閱讀',level:2,q:'What is the purpose of the notice?',passage:'The office cafeteria will be closed for cleaning on Saturday. Employees may use the café on the first floor during this time.',opts:['To announce a temporary closure','To introduce a new menu','To invite employees to a meeting','To change office hours'],a:0,why:'公告通知員工餐廳星期六因清潔暫停開放。',topic:'閱讀：公告目的'},
-{id:'65',kind:'閱讀',level:3,q:'What must happen before the product launch date is confirmed?',passage:'The marketing team has completed the product brochure. However, the launch date will not be confirmed until the final safety review is finished next week.',opts:['The brochure must be rewritten','The safety review must be completed','The product must be shipped','The customer must approve the price'],a:1,why:'上市日期要等下週完成最終安全審查後才能確認。',topic:'閱讀：推論'}
-,{id:'69',kind:'填空',level:1,q:'Please place your _____ in the overhead compartment.',opts:[],a:-1,answerText:'luggage',meaning:'行李',why:'luggage 是行李，常用於機場與搭機情境。',topic:'旅遊',word:'luggage'},
-{id:'70',kind:'填空',level:1,q:'The train departs from _____ four.',opts:[],a:-1,answerText:'platform',meaning:'月台',why:'platform 是月台；platform four 表示第四月台。',topic:'交通',word:'platform'},
-{id:'71',kind:'填空',level:2,q:'Our flight’s _____ time is 8:45 a.m.',opts:[],a:-1,answerText:'departure',meaning:'出發；起飛',why:'departure time 表示出發時間。',topic:'旅遊',word:'departure'},
-{id:'72',kind:'填空',level:1,q:'Taipei is our final _____.',opts:[],a:-1,answerText:'destination',meaning:'目的地',why:'destination 是目的地，常用於旅遊與交通情境。',topic:'旅遊',word:'destination'},
-{id:'73',kind:'填空',level:1,q:'Please have your _____ ready at the airport.',opts:[],a:-1,answerText:'passport',meaning:'護照',why:'passport 是護照，辦理機場報到時需要準備。',topic:'旅遊',word:'passport'},
-{id:'74',kind:'文法',level:2,q:'The manager _____ the project update every Monday.',opts:['send','sends','sending','sent'],a:1,why:'every Monday 表示規律習慣；主詞 The manager 是第三人稱單數，因此使用 sends。',topic:'現在簡單式'},
-{id:'75',kind:'文法',level:2,q:'The report _____ by the engineering team yesterday.',opts:['completed','was completed','has complete','is completing'],a:1,why:'報告是被完成，使用被動語態；yesterday 指過去，因此用 was completed。',topic:'被動語態'},
-{id:'76',kind:'文法',level:2,q:'We have worked with this supplier _____ 2022.',opts:['for','since','during','from'],a:1,why:'since 後面接明確的起始時間點，2022 是起始年份。',topic:'現在完成式'},
-{id:'80',kind:'閱讀',level:1,q:'What time does boarding begin?',passage:'Flight AB218 to Osaka is scheduled to depart at 10:30 a.m. Boarding will begin 40 minutes before departure at Gate 12.',opts:['9:30 a.m.','9:50 a.m.','10:00 a.m.','10:40 a.m.'],a:1,why:'起飛時間是 10:30，登機提前 40 分鐘開始，因此是 9:50 a.m.' ,topic:'閱讀：機場公告'},
-{id:'81',kind:'閱讀',level:1,q:'Where should passengers go to board the train?',passage:'The express train to Hualien will leave at 2:15 p.m. from platform six. Please arrive at the platform at least five minutes before departure.',opts:['Platform four','Platform five','Platform six','Platform seven'],a:2,why:'公告指出列車從 platform six 出發。',topic:'閱讀：交通資訊'}
-,{id:'82',kind:'文法',level:4,q:'The manager, along with two assistants, _____ attending the conference.',opts:['are','is','be','were'],a:1,why:'主詞核心是單數的 The manager；along with 不會改變主詞單複數，因此使用 is。',topic:'主詞動詞一致'}
-,{id:'83',kind:'文法',level:4,q:'All applicants must submit _____ resumes by Friday.',opts:['they','them','their','theirs'],a:2,why:'名詞 resumes 前需要所有格形容詞 their。',topic:'所有格'}
-,{id:'84',kind:'文法',level:4,q:'The shipment will arrive _____ the warehouse before noon.',opts:['at','in','on','for'],a:0,why:'arrive at 用於具體地點，例如 warehouse；arrive in 常接城市或國家。',topic:'介系詞搭配'}
-,{id:'85',kind:'文法',level:4,q:'_____ the equipment is expensive, it will improve production efficiency.',opts:['Although','Because of','Despite','During'],a:0,why:'空格後面是完整子句 the equipment is expensive，需要連接詞 Although。',topic:'連接詞'}
-,{id:'86',kind:'填空',level:4,q:'Please _____ the attached form before submitting your application.',opts:[],a:-1,answerText:'complete',meaning:'完成；填寫',why:'complete a form 表示填寫／完成表格，是常見商務搭配。',topic:'商務動詞',word:'complete'}
-,{id:'87',kind:'填空',level:4,q:'The meeting has been _____ until next Wednesday.',opts:[],a:-1,answerText:'postponed',meaning:'延期',why:'postpone 表示延期；has been + 過去分詞形成現在完成式被動語態。',topic:'商務動詞',word:'postponed'}
-,{id:'88',kind:'填空',level:4,q:'Employees are required to _____ their identification badges.',opts:[],a:-1,answerText:'display',meaning:'展示；出示',why:'display identification badges 表示出示識別證。',topic:'職場搭配',word:'display'}
-,{id:'89',kind:'填空',level:4,q:'The company will _____ a new product at the trade show.',opts:[],a:-1,answerText:'launch',meaning:'推出；發表',why:'launch a product 表示推出新產品。',topic:'商務搭配',word:'launch'}
-,{id:'90',kind:'閱讀',level:4,q:'When will the training session begin?',passage:'NOTICE: New Employee Training\nThe training session will be held in Conference Room B on Thursday, September 12. Please arrive by 8:45 a.m. The session will begin promptly at 9:00 a.m. and lunch will be provided.',opts:['8:45 a.m.','9:00 a.m.','12:00 p.m.','1:00 p.m.'],a:1,why:'公告明確指出課程將於上午 9:00 準時開始。',topic:'TOEIC Part 7：公告'}
-,{id:'91',kind:'閱讀',level:4,q:'What is the purpose of the email?',passage:'Subject: Updated Delivery Schedule\nDear Ms. Lin,\nDue to a delay in receiving materials, the delivery of your order has been rescheduled for October 18. We apologize for the inconvenience and will provide another update if the schedule changes.\nBest regards,\nCustomer Service',opts:['To confirm a job interview','To announce a delivery delay','To request payment','To introduce a new product'],a:1,why:'郵件說明因材料延遲，訂單交期改為 10 月 18 日。',topic:'TOEIC Part 7：電子郵件'}
-,{id:'92',kind:'閱讀',level:4,q:'Where will the workshop take place?',passage:'WORKSHOP ANNOUNCEMENT\nThe annual technology workshop will take place at the Riverside Hotel on May 6. Registration opens at 8:30 a.m. Participants are encouraged to register online before April 28.',opts:['At the company office','At the Riverside Hotel','At the airport','At the convention center'],a:1,why:'公告指出研討會將在 Riverside Hotel 舉行。',topic:'TOEIC Part 7：活動公告'}
-,{id:'93',kind:'閱讀',level:4,q:'What should participants do before April 28?',passage:'WORKSHOP ANNOUNCEMENT\nThe annual technology workshop will take place at the Riverside Hotel on May 6. Registration opens at 8:30 a.m. Participants are encouraged to register online before April 28.',opts:['Pay for hotel parking','Submit a written report','Register online','Contact the speaker'],a:2,why:'公告建議參加者在 4 月 28 日前完成線上報名。',topic:'TOEIC Part 7：公告細節'}
-
+export type Question = {
+ id:string; unitId:number; type:'choice'|'fill'; prompt:string; choices?:string[];
+ answer:string; explanation:string; conceptId:string; chinese:string;
+}
+const q=(id:string,unitId:number,type:'choice'|'fill',prompt:string,answer:string,explanation:string,conceptId:string,chinese:string,choices?:string[]):Question=>({id,unitId,type,prompt,answer,explanation,conceptId,chinese,choices})
+export const questionBank:Question[]=[
+ // Unit 1: sentence structure and subject-verb agreement
+ q('u1-1',1,'choice','Mia _____ a student.','is','Mia 是第三人稱單數，搭配 be 動詞 is。','be-verb','Mia 是一名學生。',['am','is','are','be']),
+ q('u1-2',1,'choice','My friends _____ in the office.','are','主詞 friends 是複數，be 動詞使用 are。','be-verb','我的朋友們在辦公室。',['am','is','are','be']),
+ q('u1-3',1,'fill','I _____ ready for the meeting.','am','主詞 I 固定搭配 am。','be-verb','我已經準備好開會了。'),
+ q('u1-4',1,'choice','The engineer _____ the report every Friday.','checks','一般現在式中，第三人稱單數動詞加 -s。','basic-verb','這位工程師每星期五檢查報告。',['check','checks','checking','to check']),
+ q('u1-5',1,'choice','We _____ the test results.','review','主詞 We 搭配原形動詞 review。','basic-verb','我們檢查測試結果。',['reviews','review','reviewing','reviewed']),
+ q('u1-6',1,'fill','They _____ in Taipei.','work','主詞 They 搭配原形動詞 work。','basic-verb','他們在台北工作。'),
+ // Unit 2: nouns and verbs
+ q('u2-1',2,'choice','The _____ is on the desk.','notebook','此處需要名詞作主詞，notebook 是名詞。','parts-of-speech','筆記本在桌上。',['quickly','notebook','carefully','write']),
+ q('u2-2',2,'choice','Please _____ the document.','open','Please 後面使用原形動詞。','parts-of-speech','請打開這份文件。',['opener','opening','open','opened']),
+ q('u2-3',2,'fill','The _____ answers customer questions.','manager','空格需要表示人的名詞 manager。','parts-of-speech','經理回答客戶問題。'),
+ q('u2-4',2,'choice','Which word is a verb?','deliver','deliver 表示「交付」，是動詞。','parts-of-speech','哪一個字是動詞？',['careful','delivery','deliver','useful']),
+ q('u2-5',2,'choice','Our team will _____ the samples tomorrow.','ship','will 後面接原形動詞。','parts-of-speech','我們團隊明天會寄送樣品。',['shipment','ships','shipping','ship']),
+ q('u2-6',2,'fill','Please _____ your name here.','write','Please 後面接原形動詞 write。','parts-of-speech','請在這裡寫下你的名字。'),
+ // Unit 3: be verbs
+ q('u3-1',3,'choice','I _____ an engineer.','am','I 與 be 動詞 am 搭配。','be-verb','我是一名工程師。',['is','are','am','be']),
+ q('u3-2',3,'choice','The samples _____ ready.','are','samples 是複數，使用 are。','be-verb','樣品已經準備好了。',['is','am','are','be']),
+ q('u3-3',3,'fill','The meeting _____ at 10 a.m.','is','meeting 是單數，使用 is。','be-verb','會議在上午十點。'),
+ q('u3-4',3,'choice','She _____ not available today.','is','She + is not，縮寫為 isn’t。','be-verb','她今天沒有空。',['am','are','is','be']),
+ q('u3-5',3,'choice','_____ they at the factory?','Are','一般疑問句將 Are 放在複數主詞 they 前。','be-verb','他們在工廠嗎？',['Is','Am','Are','Be']),
+ q('u3-6',3,'fill','We _____ not late.','are','We 的否定句為 are not。','be-verb','我們沒有遲到。'),
+ // Unit 4: simple present
+ q('u4-1',4,'choice','He _____ to work by bus.','goes','第三人稱單數 he 的 go 變為 goes。','present-simple','他搭公車上班。',['go','goes','going','gone']),
+ q('u4-2',4,'choice','They _____ lunch at noon.','eat','They 後面使用原形動詞。','present-simple','他們中午吃午餐。',['eats','eating','eat','ate']),
+ q('u4-3',4,'fill','My supervisor _____ the schedule every morning.','checks','My supervisor 是第三人稱單數，check 加 -s。','present-simple','我的主管每天早上檢查時程。'),
+ q('u4-4',4,'choice','She does not _____ coffee.','drink','does not 後面使用原形動詞。','present-simple','她不喝咖啡。',['drinks','drinking','drank','drink']),
+ q('u4-5',4,'choice','_____ your team work on Fridays?','Does','your team 視為單數，疑問句使用 Does。','present-simple','你們團隊星期五工作嗎？',['Do','Does','Is','Are']),
+ q('u4-6',4,'fill','The factory _____ at 8 a.m.','opens','工廠是單數主詞，open 加 -s。','present-simple','工廠上午八點開門。'),
+ // Unit 5: negatives
+ q('u5-1',5,'choice','We _____ have enough time.','do not','We 的一般動詞否定句使用 do not + 原形動詞。','negative','我們沒有足夠的時間。',['does not','do not','are not','is not']),
+ q('u5-2',5,'choice','He _____ like spicy food.','does not','He 的否定句使用 does not，後接原形 like。','negative','他不喜歡辣的食物。',['do not','does not','is not','are not']),
+ q('u5-3',5,'fill','I _____ understand this question.','do not','I + do not + 原形動詞。','negative','我不理解這個問題。'),
+ q('u5-4',5,'choice','They _____ work on Sundays.','do not','They 是複數主詞，使用 do not。','negative','他們星期日不上班。',['does not','is not','do not','are not']),
+ q('u5-5',5,'choice','Which sentence is correct?','She does not drive.','does not 後面接原形動詞 drive。','negative','哪個句子正確？',['She do not drives.','She does not drives.','She does not drive.','She not drive.']),
+ q('u5-6',5,'fill','The machine _____ start.','does not','The machine 是單數，否定句使用 does not。','negative','這台機器無法啟動。'),
+ // Unit 6: yes/no questions
+ q('u6-1',6,'choice','_____ you speak English?','Do','一般動詞疑問句，you 使用 Do。','questions','你會說英文嗎？',['Does','Do','Are','Is']),
+ q('u6-2',6,'choice','_____ he work here?','Does','he 是第三人稱單數，疑問句使用 Does。','questions','他在這裡工作嗎？',['Do','Does','Is','Are']),
+ q('u6-3',6,'fill','_____ they need more time?','Do','they 的一般動詞疑問句使用 Do。','questions','他們需要更多時間嗎？'),
+ q('u6-4',6,'choice','Does she _____ the report?','write','Does 後面接原形動詞 write。','questions','她寫這份報告嗎？',['writes','writing','wrote','write']),
+ q('u6-5',6,'choice','_____ the samples ready?','Are','samples 是複數，be 動詞疑問句使用 Are。','questions','樣品準備好了嗎？',['Is','Am','Are','Do']),
+ q('u6-6',6,'fill','Where _____ your manager work?','does','your manager 是第三人稱單數，疑問句使用 does。','questions','你的經理在哪裡工作？'),
+ // Unit 7: third person singular
+ q('u7-1',7,'choice','Amy _____ English every night.','studies','子音 + y 結尾，第三人稱單數改 y 為 ies。','third-person','Amy 每晚讀英文。',['study','studys','studies','studying']),
+ q('u7-2',7,'choice','The bus _____ at 7:30.','arrives','一般動詞第三人稱單數加 -s。','third-person','公車七點半抵達。',['arrive','arrives','arriving','arrived']),
+ q('u7-3',7,'fill','My brother _____ TV after dinner.','watches','watch 結尾為 ch，加 -es。','third-person','我哥哥晚餐後看電視。'),
+ q('u7-4',7,'choice','Which is correct?','She has a new laptop.','have 的第三人稱單數是 has。','third-person','哪個句子正確？',['She have a new laptop.','She haves a new laptop.','She has a new laptop.','She having a new laptop.']),
+ q('u7-5',7,'choice','The engineer _____ the data carefully.','checks','第三人稱單數動詞 check 加 -s。','third-person','工程師仔細檢查數據。',['check','checking','checks','checked']),
+ q('u7-6',7,'fill','The store _____ at nine.','closes','close 加 -s，形成 closes。','third-person','商店九點關門。'),
+ // Unit 8: plural nouns and articles
+ q('u8-1',8,'choice','I have two _____.','boxes','box 加 -es 形成複數 boxes。','nouns-articles','我有兩個盒子。',['box','boxs','boxes','boxies']),
+ q('u8-2',8,'choice','She is _____ engineer.','an','engineer 以母音音素開頭，使用 an。','nouns-articles','她是一名工程師。',['a','an','the','不需要冠詞']),
+ q('u8-3',8,'fill','There are three _____ on the table.','books','three 後面可數名詞使用複數。','nouns-articles','桌上有三本書。'),
+ q('u8-4',8,'choice','I need _____ umbrella.','an','umbrella 以母音音素開頭，使用 an。','nouns-articles','我需要一把雨傘。',['a','an','the','some']),
+ q('u8-5',8,'choice','The _____ are in the meeting room.','chairs','are 前面需要複數主詞 chairs。','nouns-articles','椅子在會議室裡。',['chair','chairs','chairing','a chair']),
+ q('u8-6',8,'fill','He bought a _____ yesterday.','camera','a 後面接單數可數名詞 camera。','nouns-articles','他昨天買了一台相機。'),
+ // Unit 9: pronouns
+ q('u9-1',9,'choice','_____ are my colleagues.','They','句首需要主格代名詞作主詞。','pronouns','他們是我的同事。',['Them','Their','They','Theirs']),
+ q('u9-2',9,'choice','Please call _____.','me','call 後面需要受格 me。','pronouns','請打電話給我。',['I','my','me','mine']),
+ q('u9-3',9,'fill','This is Anna. _____ is our manager.','She','Anna 是女性，使用主格 She。','pronouns','這是 Anna。她是我們的經理。'),
+ q('u9-4',9,'choice','The customer sent _____ an email.','us','sent 後面表示「寄給我們」，使用受格 us。','pronouns','客戶寄了一封電子郵件給我們。',['we','our','ours','us']),
+ q('u9-5',9,'choice','_____ is on the desk.','It','指代單數物品作主詞，使用 It。','pronouns','它在桌上。',['Its','It','They','Them']),
+ q('u9-6',9,'fill','Tom and I work together. _____ are engineers.','We','Tom and I 可用 We 代替。','pronouns','Tom 和我一起工作。我們是工程師。'),
+ // Unit 10: possessives and demonstratives
+ q('u10-1',10,'choice','This is _____ laptop.','my','名詞 laptop 前面需要所有格 my。','possessives','這是我的筆記型電腦。',['I','me','my','mine']),
+ q('u10-2',10,'choice','The blue bag is _____.','hers','be 動詞後可使用名詞性所有格 hers。','possessives','藍色的包包是她的。',['she','her','hers','herself']),
+ q('u10-3',10,'fill','Is this _____ notebook? (you)','your','名詞 notebook 前面使用所有格 your。','possessives','這是你的筆記本嗎？'),
+ q('u10-4',10,'choice','_____ books here are mine.','These','books 是複數且在近處，使用 These。','possessives','這些書是我的。',['This','That','These','It']),
+ q('u10-5',10,'choice','_____ is our new office over there.','That','單數且距離較遠，使用 That。','possessives','那邊是我們的新辦公室。',['These','Those','That','They']),
+ q('u10-6',10,'fill','The red car is _____. (he)','his','名詞性所有格 his 可獨立使用。','possessives','紅色汽車是他的。'),
+ // Unit 11: present simple
+ q('u11-1',11,'choice','Our office _____ at 9 a.m.','opens','單數主詞 office，動詞 open 加 -s。','present-simple','我們辦公室上午九點開門。',['open','opens','opening','opened']),
+ q('u11-2',11,'choice','I usually _____ coffee in the morning.','drink','I 搭配原形動詞 drink。','present-simple','我通常早上喝咖啡。',['drinks','drinking','drink','drank']),
+ q('u11-3',11,'fill','The supplier _____ parts every month.','delivers','supplier 是第三人稱單數，deliver 加 -s。','present-simple','供應商每個月交付零件。'),
+ q('u11-4',11,'choice','How often _____ you exercise?','do','you 的一般現在式疑問句使用 do。','present-simple','你多久運動一次？',['does','do','are','is']),
+ q('u11-5',11,'choice','He _____ work on Saturdays.','does not','He 的否定句使用 does not + 原形動詞。','present-simple','他星期六不上班。',['do not','does not','is not','not']),
+ q('u11-6',11,'fill','Water _____ at 100 degrees Celsius.','boils','一般事實用現在簡單式，water 視為單數，boil 加 -s。','present-simple','水在攝氏 100 度沸騰。'),
+ // Unit 12: present continuous
+ q('u12-1',12,'choice','She _____ a report right now.','is writing','現在進行式：is + V-ing。','present-continuous','她現在正在寫報告。',['writes','is writing','write','wrote']),
+ q('u12-2',12,'choice','They _____ the cold plate at the moment.','are testing','They + are + V-ing。','present-continuous','他們目前正在測試水冷板。',['test','tests','are testing','tested']),
+ q('u12-3',12,'fill','I _____ for the bus now.','am waiting','I + am + V-ing，表示現在正在等待。','present-continuous','我現在正在等公車。'),
+ q('u12-4',12,'choice','He is not _____ today.','working','be 動詞後接 not，再接 V-ing。','present-continuous','他今天沒有在工作。',['work','works','worked','working']),
+ q('u12-5',12,'choice','_____ you listening to me?','Are','現在進行式疑問句將 be 動詞放在主詞前。','present-continuous','你正在聽我說話嗎？',['Do','Does','Are','Is']),
+ q('u12-6',12,'fill','The engineers _____ the pressure drop. (measure)','are measuring','複數主詞 engineers + are + measuring。','present-continuous','工程師們正在測量壓降。')
 ]
+export const getQuestionsForUnit=(unitId:number)=>questionBank.filter(item=>item.unitId===unitId)
+export const getQuestionsForConcept=(conceptId:string)=>questionBank.filter(item=>item.conceptId===conceptId)
