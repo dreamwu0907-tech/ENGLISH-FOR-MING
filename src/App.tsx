@@ -1,177 +1,122 @@
 import {useEffect,useMemo,useState} from 'react'
-import {BookOpen,Brain,ChartNoAxesCombined,Check,ChevronRight,Home} from 'lucide-react'
-import { learningStages } from './data/curriculum'
-import { buildDailyMission } from './learning/dailyPlanner'
-import { bank, type Q } from './data/questionBank'
-import { courseStages, courseUnitCount, plannedFormalQuestionCount, plannedExtensionQuestionCount } from './data/courseRoadmap'
+import {ArrowLeft,BookOpen,CheckCircle2,ChevronRight,Clock3,GraduationCap,Home,RotateCcw,Target} from 'lucide-react'
+import {courseStages,courseUnitCount,publishedUnitCount} from './data/courseV3Roadmap'
+import {lessons,getLesson} from './data/courseV3Lessons'
+import {questionBank,questionsForUnit,questionsForConcept,type Question} from './data/courseV3Questions'
 
-type H={streak:number;tries:number;due:number;mastered:boolean}
-type SavedWord={word:string;meaning:string;example:string;addedAt:number}
-const dictionary:Record<string,string>={amy:'艾美（人名）',junior:'初中的',high:'高的；高級的',school:'學校',student:'學生',likes:'喜歡',music:'音樂',every:'每一個',sunday:'星期日',goes:'去；前往',park:'公園',with:'和；與',brother:'兄弟',plays:'玩；打（球）',badminton:'羽毛球',engineer:'工程師',engineering:'工程',team:'團隊',completed:'完成',thermal:'熱的；熱能的',test:'測試',monday:'星期一',data:'資料；數據',being:'正在；處於',reviewed:'已審查',now:'現在',final:'最終的',report:'報告',scheduled:'預定的',sent:'寄送；送出',customer:'客戶',wednesday:'星期三',morning:'早上',supplier:'供應商',informed:'通知',copper:'銅',material:'材料',did:'做（do 的過去式）',not:'不；沒有',pass:'通過',incoming:'進料的',inspection:'檢驗',replacement:'替換品；替代的',batch:'批次',prepared:'已準備',prototype:'原型；樣品',delivery:'交貨；配送',delayed:'延遲的',two:'二；兩個',days:'天',the:'這個；那個',is:'是；在',a:'一個',she:'她',he:'他',it:'它；這',and:'和；而且',to:'到；向',on:'在（某一天）',by:'藉由；由',because:'因為',of:'……的',so:'所以',will:'將會',that:'那個；引導子句',we:'我們',us:'我們（受格）',they:'他們',are:'是；在',was:'是；在（過去式）','didn’t':'沒有'}
-const KEY='english-for-ming-v2'
-const exampleTranslations:Record<string,string>={
-eat:'我通常七點吃早餐。',taller:'我哥哥比我高。',three:'桌上有三顆蘋果。',close:'請把門關上。',goes:'她每天搭公車上學。',recycle:'我們應該回收塑膠瓶。',traffic:'今天路上車很多。',weather:'明天天氣會晴朗。',healthy:'吃蔬菜有助於保持健康。',travel:'我明年想去日本旅行。',online:'我通常在線上閱讀新聞。',message:'我傳了一則訊息給朋友。',arrive:'火車幾點抵達？',popular:'這部電影很受青少年歡迎。',important:'充足的睡眠很重要。',energy:'太陽能是一種潔淨能源。',protect:'我們應該保護環境。',reduce:'我們需要減少塑膠廢棄物。',schedule:'請確認會議行程。',purchase:'公司計畫購買新設備。',available:'你明天上午有空開會嗎？',confirm:'請透過電子郵件確認你的預約。',department:'請聯絡業務部門。',equipment:'所有安全設備都必須檢查。',delay:'航班因為長時間延誤而取消。'
-}
-const chapters=[
-{id:1,title:'日常生活',subtitle:'Daily Life',description:'從自我介紹、日常習慣到生活對話，建立英文基礎。',grammar:['2','4','6','9'],fill:['21','22','23','24','25','26','27','28','29','30','31','32','34','35'],integrated:['1','3','5','7','8','10','56','64'],scenario:[]},
-{id:2,title:'交通與旅遊',subtitle:'Travel & Transportation',description:'練習交通、住宿、購物與旅遊時常見的英文。',grammar:['13','16','18'],fill:['33','45','69','70','71','72','73'],integrated:['57','58','80','81'],scenario:[]},
-{id:3,title:'工作與職場',subtitle:'Workplace English',description:'進入會議、工作安排、報告與商務溝通情境。',grammar:['11','74','75','76'],fill:['36','37','38','39','40','41','42','43','44'],integrated:['12','14','15','17','19','20','59','60','61','62','63','65'],scenario:[]},
-{id:4,title:'TOEIC 入門與商務基礎',subtitle:'TOEIC Foundations',description:'開始進入多益 Part 5 文法與 Part 7 商務閱讀。',grammar:['82','83','84','85'],fill:['86','87','88','89'],integrated:['90','91','92','93'],scenario:[]}
-]
-const dialoguePool=[
-{scene:'Restaurant Reservation',lines:['Woman: Good evening. I’d like to make a reservation for two.','Man: Certainly. What time would you prefer?','Woman: Around seven thirty, please.','Man: We have a table available at 7:30. May I have your name?','Woman: It’s Ming. Thank you.'],question:'What is the woman calling to do?',opts:['Cancel a reservation','Make a reservation','Order dinner','Ask for directions'],answer:1,why:'She says she would like to make a reservation for two, so she is booking a table.'},
-{scene:'Public Transportation',lines:['Man: Excuse me. Does this bus go to the city center?','Woman: Yes, it does. You should get off at the Central Station.','Man: How long does it take?','Woman: About twenty minutes, depending on traffic.'],question:'Where should the man get off?',opts:['At the airport','At the Central Station','At the museum','At the bus terminal'],answer:1,why:'The woman tells him to get off at Central Station.'},
-{scene:'Work Meeting',lines:['Woman: Have you finished the test report?','Man: Almost. I’m checking the pressure-drop data now.','Woman: Please send it to the customer before noon.','Man: No problem. I’ll email it as soon as I finish.'],question:'What will the man do next?',opts:['Repeat the thermal test','Call the supplier','Email the report','Schedule a meeting'],answer:2,why:'He says he will email the report as soon as he finishes checking the data.'},
-{scene:'Hotel Check-in',lines:['Man: Hello. I have a reservation under the name Wu.','Woman: Welcome. May I see your passport, please?','Man: Of course. Is breakfast included?','Woman: Yes. Breakfast is served from six thirty to ten.'],question:'What does the man want to know?',opts:['The Wi-Fi password','The breakfast time','The room price','The checkout date'],answer:1,why:'He asks whether breakfast is included with the room.'},
-{scene:'Office Scheduling',lines:['Woman: Are you available for a meeting tomorrow morning?','Man: I’m afraid I’m busy until ten.','Woman: How about ten thirty?','Man: That works for me. Please send me an invitation.'],question:'When can the man attend the meeting?',opts:['At 9:00','At 9:30','At 10:00','At 10:30'],answer:3,why:'They agree to meet at 10:30.'}
-,
-{scene:'Airport Check-in',lines:['Agent: May I see your passport and ticket?','Traveler: Certainly. Here they are.','Agent: Are you checking any bags today?','Traveler: Yes, one suitcase.'],question:'What does the traveler need to show?',opts:['A hotel booking','A passport and ticket','A driving license','A boarding pass only'],answer:1,why:'The agent asks to see the traveler’s passport and ticket.'},
-{scene:'Train Information',lines:['Passenger: What time does the next train leave for Taichung?','Staff: It leaves at 9:15 from platform three.','Passenger: How much is a one-way ticket?','Staff: It costs 250 dollars.'],question:'Which platform does the passenger need?',opts:['Platform one','Platform two','Platform three','Platform four'],answer:2,why:'The staff member says the train leaves from platform three.'}
-]
-let activeSpeech:SpeechSynthesisUtterance|null=null
+type ConceptState={streak:number;lastId:string|null;mastered:boolean;attempts:number}
+type Store={completedUnits:number[];concepts:Record<string,ConceptState>;answered:number;correct:number;studySeconds:number;attempts:number;wrong:number}
+type Page='home'|'lesson'|'quiz'|'result'|'progress'
+type Result={question:Question;answer:string;correct:boolean}
+const STORAGE_KEY='english-for-ming-v3'
+const emptyStore:Store={completedUnits:[],concepts:{},answered:0,correct:0,studySeconds:0,attempts:0,wrong:0}
+const readStore=():Store=>{try{const raw=localStorage.getItem(STORAGE_KEY);return raw?{...emptyStore,...JSON.parse(raw)}:emptyStore}catch{return emptyStore}}
+const normal=(s:string)=>s.trim().toLowerCase().replace(/[.!?]+$/,'')
+const dueConcepts=(store:Store)=>Object.entries(store.concepts).filter(([,v])=>!v.mastered)
+const reviewQuestions=(store:Store,limit=10)=>dueConcepts(store).slice(0,limit).map(([concept,state])=>{const pool=questionsForConcept(concept);return pool.find(q=>q.id!==state.lastId)||pool[0]}).filter(Boolean) as Question[]
 
 export default function App(){
- const [store,setStore]=useState<any>(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}})
- const [page,setPage]=useState<'home'|'quiz'|'result'|'progress'|'vocab'>('home')
- const [chapterId,setChapterId]=useState(1)
- const [module,setModule]=useState<'grammar'|'fill'|'integrated'|'scenario'|'review'|'daily'>('grammar')
- const [list,setList]=useState<Q[]>([])
- const [idx,setIdx]=useState(0)
- const [answers,setAnswers]=useState<(number|string|null)[]>([])
- const [choice,setChoice]=useState<number|null>(null)
- const [inputAnswer,setInputAnswer]=useState('')
- const [result,setResult]=useState<any[]|null>(null)
- const [dialogue,setDialogue]=useState<any>(null)
- const [reviewForChapter,setReviewForChapter]=useState(false)
+ const [store,setStore]=useState<Store>(readStore)
+ const [page,setPage]=useState<Page>('home')
+ const [activeUnit,setActiveUnit]=useState(1)
+ const [session,setSession]=useState<Question[]>([])
+ const [sessionKind,setSessionKind]=useState<'unit'|'review'>('unit')
+ const [index,setIndex]=useState(0)
+ const [answer,setAnswer]=useState('')
+ const [results,setResults]=useState<Result[]>([])
  const [sessionStart,setSessionStart]=useState(0)
- const [selectedWord,setSelectedWord]=useState<{word:string;meaning:string;example:string}|null>(null)
- const history:Record<string,H>=store.history||{}
- useEffect(()=>{localStorage.setItem(KEY,JSON.stringify(store))},[store])
- 
- const chapter=chapters.find(c=>c.id===chapterId)||chapters[0]
- const currentStageId=Math.min(4,chapterId)
- const currentStage=learningStages[currentStageId-1]
- const dailyMission=useMemo(()=>buildDailyMission(bank,history,currentStageId),[store,currentStageId])
- const progress=store.chapterProgress||{}
- const chapterStatus=(id:number)=>progress[id]||{}
- const chapterCompleted=(id:number)=>['grammar','fill','integrated'].every(k=>chapterStatus(id)[k])||!!chapterStatus(id).reviewPassed
- const isUnlocked=(id:number)=>id===1||chapters.slice(0,id-1).every(c=>chapterCompleted(c.id))
- const completedModules=['grammar','fill','integrated'].filter(k=>chapterStatus(chapterId)[k]).length
- const chapterQuestionIds=(c:any)=>[...new Set([...c.grammar,...c.fill,...c.integrated])]
- const chapterMistakeIds=(id:number)=>{const c=chapters.find(x=>x.id===id)||chapters[0];const saved=(store.chapterMistakes||{})[id]||[];const legacy=chapterQuestionIds(c).filter((qid:string)=>history[qid]?.tries>0&&history[qid]?.streak===0);return [...new Set([...saved,...legacy])]}
- const chapterReady=chapterCompleted(chapterId)
- const savedWords:SavedWord[]=store.vocab||[]
- const due=useMemo(()=>bank.filter(q=>history[q.id]&&!history[q.id].mastered&&history[q.id].due<=Date.now()),[store])
- const vocabWords=useMemo(()=>chapter.fill.map(id=>bank.find(q=>q.id===id)).filter(Boolean).slice(0,15) as Q[],[chapterId])
- const begin=(kind:'grammar'|'fill'|'integrated'|'scenario')=>{
-  setModule(kind);setSelectedWord(null);setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setDialogue(null)
-  if(kind==='scenario'){
-   const pool=dialoguePool.filter((d:any)=>chapterId===1?['Restaurant Reservation','Public Transportation','Hotel Check-in'].includes(d.scene):chapterId===2?['Airport Check-in','Train Information'].includes(d.scene):['Work Meeting','Office Scheduling'].includes(d.scene))
-   const d=pool[Math.floor(Math.random()*pool.length)]||dialoguePool[0];setDialogue(d)
-   const q:Q={id:'dialogue-'+Date.now(),kind:'情境對話',level:chapterId,q:d.question,passage:d.lines.join('\n'),opts:d.opts,a:d.answer,why:d.why,topic:d.scene}
-   setList([q])
-  }else{
-   const ids=chapter[kind]
-   const selected=ids.map(id=>bank.find(q=>q.id===id)).filter(Boolean) as Q[]
-   setList(kind==='fill'?selected:selected.sort(()=>Math.random()-.5).slice(0,Math.min(10,selected.length)))
-  }
-  setPage('quiz')
+ const [sessionScore,setSessionScore]=useState(0)
+ const [showAll,setShowAll]=useState(false)
+ useEffect(()=>{localStorage.setItem(STORAGE_KEY,JSON.stringify(store))},[store])
+ const unit=getLesson(activeUnit)
+ const current=session[index]
+ const mastered=Object.values(store.concepts).filter(x=>x.mastered).length
+ const pending=dueConcepts(store).length
+ const accuracy=store.answered?Math.round(store.correct/store.answered*100):0
+ const remainingUnits=Math.max(0,courseUnitCount-store.completedUnits.length)
+ const remainingMinutes=remainingUnits*15+pending*2
+ const totalQuestions=questionBank.length
+ const bankPercent=Math.round(publishedUnitCount/courseUnitCount*100)
+ const stageProgress=(id:number)=>{const s=courseStages[id-1];const done=s.units.filter(u=>store.completedUnits.includes(u.id)).length;return {done,total:s.units.length}}
+ const beginUnit=(id:number)=>{
+  setActiveUnit(id);setSessionKind('unit')
+  const base=questionsForUnit(id)
+  const due=reviewQuestions(store,2).filter(q=>!base.some(b=>b.id===q.id))
+  setSession([...base,...due]);setIndex(0);setAnswer('');setResults([]);setSessionStart(Date.now());setPage('lesson')
  }
- const submit=()=>{
-  if(!list.length)return
-  const all=[...answers,module==='fill'?(inputAnswer.trim()||null):choice]
-  const rs=list.map((q,i)=>({q,choice:all[i]??null,correct:q.answerText?String(all[i]??'').trim().toLowerCase()===q.answerText.toLowerCase():all[i]===q.a}))
-  setResult(rs);setPage('result')
-  const h={...history}
-  rs.forEach(({q,correct})=>{const old=h[q.id]||{streak:0,tries:0,due:Date.now(),mastered:false};const streak=correct?old.streak+1:0;const days=[1,3,7,14,30];h[q.id]={streak,tries:old.tries+1,due:Date.now()+(correct?days[Math.min(streak-1,4)]:0)*86400000,mastered:streak>=5}})
-  const elapsed=Math.max(0,Math.round((Date.now()-(sessionStart||Date.now()))/1000))
-  const day=new Date().toDateString()
-  const passed=rs.length>0&&rs.filter(x=>x.correct).length/rs.length>=0.7
-  setStore((s:any)=>({...s,history:h,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress:{...(s.chapterProgress||{}),[chapterId]:{...(s.chapterProgress||{})[chapterId],[module]:passed||((s.chapterProgress||{})[chapterId]||{})[module]||false}}}))
+ const beginReview=()=>{
+  const qs=reviewQuestions(store,12)
+  if(!qs.length)return
+  setSession(qs);setSessionKind('review');setIndex(0);setAnswer('');setResults([]);setSessionStart(Date.now());setPage('quiz')
  }
- const mastered=Object.values(history).filter(x=>x.mastered).length
- const answered=store.answered||0,correct=store.correct||0,studyMinutes=Math.floor((store.studySeconds||0)/60)
- const q=list[idx]
-  const markWord=(word:string)=>{const meaning=dictionary[word.toLowerCase()]||'請依照上下文理解';setSelectedWord({word,meaning,example:q?.passage||q?.q||''})}
- const addWord=()=>{if(!selectedWord)return;const exists=savedWords.some(w=>w.word.toLowerCase()===selectedWord.word.toLowerCase());if(!exists)setStore((s:any)=>({...s,vocab:[...(s.vocab||[]),{...selectedWord,addedAt:Date.now()}]}))}
- const finishQuestion=(value:number|string|null)=>{
-  if(idx+1<list.length){setAnswers(a=>[...a,value]);setIdx(i=>i+1);setChoice(null);setInputAnswer('')}
-  else{const prior=[...answers,value];const rs=list.map((item,i)=>({q:item,choice:prior[i]??null,correct:item.answerText?String(prior[i]??'').trim().toLowerCase()===item.answerText.toLowerCase():prior[i]===item.a}));setAnswers(prior);submitWith(rs)}
- }
- const submitWith=(rs:any[])=>{
-  setResult(rs);setPage('result')
-  const h={...history}
-  rs.forEach(({q:item,correct:ok})=>{const old=h[item.id]||{streak:0,tries:0,due:Date.now(),mastered:false};const streak=ok?old.streak+1:0;h[item.id]={streak,tries:old.tries+1,due:Date.now()+(ok?[1,3,7,14,30][Math.min(streak-1,4)]:0)*86400000,mastered:streak>=5}})
-  const elapsed=Math.max(0,Math.round((Date.now()-(sessionStart||Date.now()))/1000)),day=new Date().toDateString()
-  const passed=rs.length>0&&rs.filter(x=>x.correct).length/rs.length>=0.7
-  const perfect=rs.length>0&&rs.every(x=>x.correct)
-  setStore((s:any)=>{
-   const mistakes={...(s.chapterMistakes||{})}
-   const mistakeQuestions={...(s.chapterMistakeQuestions||{})}
-   const dialoguePending=[...((mistakeQuestions[chapterId]||[]) as Q[])]
-   if(module==='review'&&reviewForChapter){
-    const legacy=chapterQuestionIds(chapters.find(x=>x.id===chapterId)||chapters[0]).filter((qid:string)=>history[qid]?.tries>0&&history[qid]?.streak===0)
-    const pending=new Set([...(mistakes[chapterId]||[]),...legacy])
-    rs.forEach(({q:item,correct:ok})=>{if(ok)pending.delete(item.id);else pending.add(item.id);if(item.kind==='情境對話'){const at=dialoguePending.findIndex(x=>x.id===item.id);if(ok&&at>=0)dialoguePending.splice(at,1);else if(!ok&&at<0)dialoguePending.push(item)}})
-    mistakes[chapterId]=[...pending]
-    mistakeQuestions[chapterId]=dialoguePending
-   }else if(module!=='review'){
-    const pending=new Set(mistakes[chapterId]||[])
-    rs.forEach(({q:item,correct:ok})=>{if(!ok){pending.add(item.id);if(item.kind==='情境對話'&&!dialoguePending.some(x=>x.id===item.id))dialoguePending.push(item)}})
-    mistakes[chapterId]=[...pending]
-    mistakeQuestions[chapterId]=dialoguePending
-   }
-   const oldChapter=(s.chapterProgress||{})[chapterId]||{}
-   const chapterProgress={...(s.chapterProgress||{}),[chapterId]:{...oldChapter,...(module==='review'&&reviewForChapter&&perfect&&mistakes[chapterId].length===0&&dialoguePending.length===0?{reviewPassed:true}:{}),...(module!=='review'?{[module]:passed||oldChapter[module]||false}:{})}}
-   return {...s,history:h,chapterMistakes:mistakes,chapterMistakeQuestions:mistakeQuestions,completed:(s.completed||0)+1,answered:(s.answered||0)+rs.length,correct:(s.correct||0)+rs.filter(x=>x.correct).length,studySeconds:(s.studySeconds||0)+elapsed,dailyStudy:{...(s.dailyStudy||{}),[day]:((s.dailyStudy||{})[day]||0)+elapsed},chapterProgress}
+ const startQuiz=()=>{setIndex(0);setAnswer('');setPage('quiz')}
+ const finish=(items:Result[])=>{
+  setResults(items);const right=items.filter(x=>x.correct).length;setSessionScore(right)
+  const elapsed=Math.max(0,Math.round((Date.now()-sessionStart)/1000))
+  setStore(old=>{
+   const concepts={...old.concepts}
+   items.forEach(({question,correct})=>{
+    const prev=concepts[question.conceptId]||{streak:0,lastId:null,mastered:false,attempts:0}
+    const nextStreak=correct?(prev.lastId!==question.id?prev.streak+1:prev.streak):0
+    concepts[question.conceptId]={streak:nextStreak,lastId:question.id,mastered:prev.mastered||nextStreak>=3,attempts:prev.attempts+1}
+   })
+   const passed=sessionKind==='unit'&&items.length>0&&right/items.length>=0.8
+   const completed=passed?Array.from(new Set([...old.completedUnits,activeUnit])):old.completedUnits
+   return {...old,concepts,completedUnits:completed,answered:old.answered+items.length,correct:old.correct+right,wrong:old.wrong+items.length-right,attempts:old.attempts+1,studySeconds:old.studySeconds+elapsed}
   })
+  setPage('result')
  }
- const startDailyMission=()=>{
-  const pool=dailyMission.questionIds.map(id=>bank.find(q=>q.id===id)).filter(Boolean) as Q[]
-  if(!pool.length){alert('目前題庫中沒有可安排的核心任務，請先進行自由練習。');return}
-  setModule('daily' as any);setReviewForChapter(false);setList(pool);setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setDialogue(null);setSelectedWord(null);setPage('quiz')
+ const submitAnswer=(value:string)=>{
+  const thisResult:Result={question:current,answer:value,correct:current.type==='fill'?normal(value)===normal(current.answer):value===current.answer}
+  const all=[...results,thisResult]
+  if(index+1<session.length){setResults(all);setIndex(index+1);setAnswer('')}
+  else finish(all)
  }
- const startChapterReview=()=>{
-  const ids=chapterMistakeIds(chapterId)
-  const pool=[...ids.map((id:string)=>bank.find(x=>x.id===id)).filter(Boolean) as Q[],...(((store.chapterMistakeQuestions||{})[chapterId]||[]) as Q[])]
-  if(!pool.length){alert('本章目前沒有需要訂正的錯題。');return}
-  setModule('review');setReviewForChapter(true);setList(pool.slice(0,20));setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setDialogue(null);setSelectedWord(null);setPage('quiz')
- }
- const startReview=()=>{const pool=due.length?due:bank.filter(x=>history[x.id]&&!history[x.id].mastered);if(!pool.length){alert('目前沒有待複習題目。');return}setReviewForChapter(false);setList(pool.slice(0,20));setModule('review');setSessionStart(Date.now());setIdx(0);setAnswers([]);setChoice(null);setInputAnswer('');setResult(null);setPage('quiz')}
+ const goHome=()=>{setPage('home');setSession([]);setResults([]);setAnswer('')}
+ const currentStage=courseStages[Math.floor((activeUnit-1)/12)]
  return <div className="shell">
-  <header><div className="logo">EN</div><div><b>ENGLISH FOR MING</b><small>Chapter-based English Learning</small></div></header>
+  <header><div className="logo"><GraduationCap size={22}/></div><div><b>ENGLISH FOR MING</b><small>Junior High → TOEIC 800</small></div><div style={{marginLeft:'auto',fontSize:10,color:'#c9d8e5'}}>V3 COURSE</div></header>
   <main>
-   {page==='home'&&<div className="stack">
-    <section className="goal-card"><div><small>YOUR LEARNING PATH</small><h2>TOEIC 800</h2><p>四個程度階段、持續擴充主題章節與題庫；完成目前內容後，依程度接續學習。</p></div><div className="milestones"><b>基礎</b><span>550</span><span>650</span><span>750</span><span>800</span></div><div className="roadmap-stages">{learningStages.map(stage=><div key={stage.id}><b>{stage.code}</b><span>{stage.title}・{stage.chapters.length} 個主題</span></div>)}</div></section>
-    <section className="roadmap-card"><div className="roadmap-head"><div><small>NEW COURSE ROADMAP</small><h2>完整學習路徑</h2><p>每課 15 分鐘・先學單字，再練習與詳解</p></div><b>{courseUnitCount} 單元</b></div><div className="roadmap-stats"><span>正式題庫規劃 <b>{plannedFormalQuestionCount} 題</b></span><span>延伸題庫規劃 <b>{plannedExtensionQuestionCount} 題</b></span></div>{courseStages.map(stage=><details className="roadmap-stage" key={stage.id} open={stage.id===1}><summary><span>Level {stage.id}｜{stage.title}</span><small>{stage.range}・20 單元</small></summary><div className="roadmap-units">{stage.units.map(unit=><div className="roadmap-unit" key={unit.id}><span>{String(unit.id).padStart(2,'0')}</span><div><b>{unit.title}</b><small>{unit.objective}</small></div></div>)}</div></details>)}<p className="roadmap-note">課程路線圖已建立；各單元完整單字與題目會依序編寫、校對後開放，避免以未教過的單字出題。</p></section>
-    <section className="chapter-card"><div className="chapter-heading"><div><small>YOUR CURRENT CHAPTER</small><h1>Chapter {chapter.id}｜{chapter.title}</h1><p>{chapter.subtitle}・{chapter.description}</p></div><span className="chapter-count">{completedModules}/3</span></div><div className="goal-progress"><i style={{width:(completedModules/3*100)+'%'}}/></div><p className="chapter-hint">三個核心單元各達 70% 即可完成本章；情境對話為額外練習。錯題訂正可持續累積與複習。</p>{chapterReady&&chapterId<chapters.length&&<button className="primary wide next-chapter" onClick={()=>setChapterId(chapterId+1)}>前往下一章：{chapters[chapterId].title} <ChevronRight/></button>}</section>
-    <section className="daily-mission-card"><div className="daily-mission-top"><div><small>ADAPTIVE DAILY MISSION</small><h2>今日核心任務</h2><p>{currentStage.code}・{currentStage.title}｜依照目前熟悉度自動安排</p></div><span>{dailyMission.questionIds.length} 題</span></div><div className="daily-mission-items">{dailyMission.items.map(item=><div className="daily-mission-item" key={item.skill}><b>{item.title}</b><small>{item.questionIds.length} 題</small><p>{item.reason}</p></div>)}</div><div className="daily-mission-bottom"><span>建議約 {dailyMission.estimatedMinutes} 分鐘，完成後仍可自由繼續學習。</span><button className="primary wide" onClick={startDailyMission}>開始今日任務 <ChevronRight/></button></div></section>
-    <section className="home-vocab"><div className="home-vocab-head"><div><label>CHAPTER VOCABULARY</label><h2>本章核心單字</h2><p>單字、例句與中文翻譯。</p></div><span>{vocabWords.length} 個</span></div><div className="chapter-vocab-list">{vocabWords.map((word,i)=>{const text=(word.q||'').replace('_____ ',(word.answerText||'')+' ');return <article className="chapter-vocab-item" key={word.id}><div className="vocab-title"><b>{word.answerText}</b><span>{word.meaning}</span></div><p className="example-en">{text}</p><p className="example-zh">{exampleTranslations[word.answerText||'']||'請依照本句情境理解句意。'}</p></article>})}</div></section>
-    <h2>本章練習</h2><div className="tiles chapter-tiles">
-     <button onClick={()=>begin('grammar')}><BookOpen/><b>文法</b><small>句型與文法觀念</small><em>{chapterStatus(chapterId).grammar?'已完成':'開始練習'}</em></button>
-     <button onClick={()=>begin('fill')}><BookOpen/><b>填空</b><small>單字與句型應用</small><em>{chapterStatus(chapterId).fill?'已完成':'開始練習'}</em></button>
-     <button onClick={()=>begin('integrated')}><Brain/><b>綜合練習</b><small>混合題型與閱讀理解</small><em>{chapterStatus(chapterId).integrated?'已完成':'開始練習'}</em></button>
-     <button onClick={()=>begin('scenario')}><BookOpen/><b>情境對話</b><small>Read and understand English dialogues</small><em>{chapterStatus(chapterId).scenario?'已完成':'開始練習'}</em></button>
-     <button onClick={startChapterReview}><Brain/><b>錯題練習</b><small>本章待訂正 {chapterMistakeIds(chapterId).filter((id:string)=>bank.some(q=>q.id===id)).length+(((store.chapterMistakeQuestions||{})[chapterId]||[]).length)} 題；全對即可解鎖下一章</small><em>{chapterStatus(chapterId).reviewPassed?'已達 100%':'開始訂正'}</em></button>
-    </div>
-    <section className="chapter-list"><h2>課程章節</h2>{chapters.map(c=>{const unlocked=isUnlocked(c.id),done=chapterCompleted(c.id);return <button key={c.id} className={'chapter-row '+(c.id===chapterId?'selected':'')} disabled={!unlocked} onClick={()=>setChapterId(c.id)}><span className="chapter-number">{String(c.id).padStart(2,'0')}</span><span className="chapter-info"><b>{c.title}</b><small>{c.subtitle}</small></span><span className="chapter-state">{done?'已完成':unlocked?'可學習':'🔒 未解鎖'}</span></button>})}</section>
-    <div className="stats"><article><small>累積學習時間</small><b>{studyMinutes}</b><small>分鐘</small></article><article><small>已熟悉題目</small><b>{mastered}</b><small>連續答對 5 次</small></article></div>
-    <div className="tiles"><button onClick={startReview}><Brain/><b>錯題複習</b><small>目前待複習 {due.length} 題</small></button><button onClick={()=>setPage('progress')}><ChartNoAxesCombined/><b>學習分析</b><small>查看累積紀錄</small></button><button onClick={()=>setPage('vocab')}><BookOpen/><b>個人單字本</b><small>收藏 {savedWords.length} 個單字</small></button></div>
-   </div>}
-   {page==='quiz'&&q&&<div className="stack">
-    <div className="qtop"><button className="link" onClick={()=>setPage('home')}>← 返回章節</button><span>{idx+1} / {list.length}</span></div><div className="track"><i style={{width:((idx+1)/list.length*100)+'%'}}/></div>
-    <div><span className="pill">{module==='grammar'?'文法':module==='fill'?'填空':module==='integrated'?'綜合練習':module==='review'?'錯題練習':module==='daily'?'今日任務':'情境對話'}</span><span className="pill muted">Chapter {chapterId}</span></div>
-    {q.kind==='情境對話'&&dialogue&&<section className="passage"><div className="passagehead">SITUATION DIALOGUE｜{dialogue.scene}</div><p className="dialogue-note">Read the dialogue and choose the best answer.</p><div className="dialogue-lines">{dialogue.lines.map((line:string,i:number)=><div className="dialogue-line" key={i}><b>{line}</b></div>)}</div></section>}
-    {q.kind!=='情境對話'&&q.passage&&<section className="passage"><div className="passagehead">READING PASSAGE</div>{q.passage.split(/(\b[\w'-]+\b)/g).map((part,i)=>{const meaning=dictionary[part.toLowerCase()];return meaning?<button key={i} className="passage-word" onClick={()=>markWord(part)}>{part}</button>:<span key={i}>{part}</span>})}</section>}
-    {selectedWord&&<section className="word-detail"><div><small>WORD DETAILS</small><h3>{selectedWord.word}</h3><p>{selectedWord.meaning}</p></div><button className="audio" onClick={addWord}>加入單字本</button></section>}
-    <section className="question"><small>QUESTION {idx+1}</small><h2>{q.q}</h2></section>
-    {q.kind==='填空'?<div className="blank-answer"><label>請輸入英文答案</label><p className="meaning-hint">中文提示：{q.meaning}</p><input value={inputAnswer} onChange={e=>setInputAnswer(e.target.value)} placeholder="Type your answer" autoComplete="off"/></div>:<div className="options">{q.opts.map((o,i)=><button className={choice===i?'chosen':''} onClick={()=>setChoice(i)} key={o}><span>{'ABCD'[i]}</span>{o}{choice===i&&<Check/>}</button>)}</div>}
-    <div className="actions"><button className="link" onClick={()=>{setChoice(null);setInputAnswer('')}}>清除答案</button><button className="primary" onClick={()=>finishQuestion(q.kind==='填空'?(inputAnswer.trim()||null):choice)}>{idx+1===list.length?'提交答案':'下一題'} <ChevronRight/></button></div><small className="hint">跳過會記為錯題，系統會安排複習。</small>
-   </div>}
-   {page==='result'&&result&&<div className="stack"><section className="score"><div className="ring">{Math.round(result.filter(x=>x.correct).length/result.length*100)}<small>%</small></div><h1>練習完成</h1><p>答對 {result.filter(x=>x.correct).length} 題・共 {result.length} 題</p></section>{result.map((r,i)=><article className="explain" key={r.q.id}><div className="explainhead">第 {i+1} 題・{r.q.kind}<b className={r.correct?'green':'red'}>{r.correct?'答對':'答錯／跳過'}</b></div><h3>{r.q.q}</h3>{r.q.kind==='情境對話'&&<><p><b>Dialogue transcript:</b></p>{(r.q.passage||'').split('\n').map((line:string,i:number)=><p key={i}>{line}</p>)}</>}{r.q.kind!=='情境對話'&&r.q.passage&&<p>{r.q.passage}</p>}<p><b>正確答案：</b>{r.q.answerText||r.q.opts[r.q.a]}</p>{r.q.why}</article>)}{module==='review'&&reviewForChapter&&result.every(x=>x.correct)&&chapterId<chapters.length&&<button className="primary wide next-chapter" onClick={()=>{setChapterId(chapterId+1);setPage('home')}}>前往下一章：{chapters[chapterId].title} <ChevronRight/></button>}<button className="primary wide" onClick={()=>setPage('home')}>返回章節</button></div>}
-   {page==='progress'&&<div className="stack"><div className="row"><h1>學習分析</h1><button className="link" onClick={()=>setPage('home')}>返回首頁</button></div><section className="scorecard"><small>TOEIC 學習目標</small><h2>550 → 800</h2><p>目前紀錄反映練習表現，不等同正式多益分數。</p></section><div className="stats"><article><small>完成單元</small><b>{store.completed||0}</b></article><article><small>累積答題</small><b>{answered}</b></article><article><small>累積正確率</small><b>{answered?Math.round(correct/answered*100):0}%</b></article><article><small>已熟悉題目</small><b>{mastered}</b></article></div><h2>章節完成狀態</h2>{chapters.map(c=><div className="mastery" key={c.id}><b>{c.title}</b><span>{['grammar','fill','integrated'].filter(k=>chapterStatus(c.id)[k]).length}/3 單元{chapterStatus(c.id).reviewPassed?'・錯題滿分解鎖':''}</span></div>)}<h2>題目熟悉度</h2>{bank.filter(item=>history[item.id]).map(item=><div className="mastery" key={item.id}><div><b>{item.topic}</b><small>{item.kind}・作答 {history[item.id].tries} 次</small></div><span>{history[item.id].mastered?'已熟悉':'連續答對 '+history[item.id].streak+'/5'}</span></div>)}</div>}
-   {page==='vocab'&&<div className="stack"><div className="row"><h1>個人單字本</h1><button className="link" onClick={()=>setPage('home')}>返回首頁</button></div>{savedWords.length?savedWords.map(w=><article className="saved-word" key={w.word}><div><b>{w.word}</b><p>{w.meaning}</p><small>{w.example}</small></div></article>):<aside>目前還沒有收藏的單字。</aside>}</div>}
+  {page==='home'&&<div className="stack">
+   <section className="hero"><label>YOUR ENGLISH ROADMAP</label><h1>從英文基礎，穩定走向 TOEIC 800</h1><p>不設定每日限制。每個單元約 15–20 分鐘，依自己的時間完成；錯誤觀念會持續安排新題複習。</p><button className="primary" onClick={()=>beginUnit(store.completedUnits.length<12?Math.min(12,store.completedUnits.length+1):1)}><BookOpen size={17}/> {store.completedUnits.length?'繼續學習':'開始第一單元'}</button></section>
+   <div className="stats">
+    <article><small>已完成單元</small><b>{store.completedUnits.length}<small style={{display:'inline',fontSize:12,color:'#8293a2'}}> / 72</small></b></article>
+    <article><small>整體答題正確率</small><b>{accuracy}%</b></article>
+    <article><small>已掌握觀念</small><b>{mastered}</b></article>
+    <article><small>待複習觀念</small><b>{pending}</b></article>
+   </div>
+   <section className="goal-card"><div><small>COURSE PROGRESS</small><h2>{Math.round(store.completedUnits.length/courseUnitCount*100)}%</h2><p>課程完成度 · {store.completedUnits.length} / {courseUnitCount} 個單元</p></div><div className="goal-progress"><i style={{width:(store.completedUnits.length/courseUnitCount*100)+'%'}}/></div><div className="milestones"><span>國中基礎</span><b>TOEIC 800</b><span>彈性學習</span></div></section>
+   <section className="goal-card"><div><small>QUESTION BANK STATUS</small><h2>{publishedUnitCount} / {courseUnitCount} 單元</h2><p>目前已上架第一階段完整題庫；其餘階段依序建置，不會把尚未完成的題目算成已完成。</p></div><div className="goal-progress"><i style={{width:bankPercent+'%'}}/></div><p style={{marginTop:8}}>題庫架構完成度 {bankPercent}% · 尚有 {courseUnitCount-publishedUnitCount} 個單元待編寫</p></section>
+   <section className="goal-card"><div><small>ESTIMATED STUDY TIME LEFT</small><h2>{Math.floor(remainingMinutes/60)} 小時 {remainingMinutes%60} 分</h2><p>以每單元 15 分鐘估算，另計待複習觀念。因採彈性學習，不預設完成日期。</p></div><div className="row"><span style={{fontSize:11,color:'#718494'}}>累計學習時間</span><b>{Math.floor(store.studySeconds/3600)} 小時 {Math.floor(store.studySeconds%3600/60)} 分</b></div></section>
+   {pending>0&&<section className="chapter-card"><div className="row"><div><h2>錯題觀念複習</h2><p className="chapter-hint">尚有 {pending} 個觀念未達連續答對 3 次。</p></div><RotateCcw color="#2676a8"/></div><button className="primary wide" onClick={beginReview}>開始錯題複習 <ChevronRight size={17}/></button></section>}
+   <div className="row"><h2>完整課程地圖</h2><span className="pill">6 階段 · 72 單元</span></div>
+   {courseStages.map(stage=>{const p=stageProgress(stage.id);return <section className="chapter-list" key={stage.id}><div className="chapter-heading"><div><small>LEVEL {stage.id} · {stage.range}</small><h1>{stage.title}</h1><p>{stage.goal}</p></div><div className="chapter-count">{p.done}/{p.total}</div></div><div className="goal-progress"><i style={{width:(p.done/p.total*100)+'%'}}/></div><div className="unit-list">{stage.units.map(u=><button key={u.id} className={'unit-row '+(u.available?'':'locked')} disabled={!u.available} onClick={()=>beginUnit(u.id)}><span className="unit-number">{String(u.id).padStart(2,'0')}</span><span className="unit-name">{u.title}<small>{u.available?'約 15–20 分鐘 · 單字、文法、選擇與填空':'題庫編寫中'}</small></span>{store.completedUnits.includes(u.id)?<CheckCircle2 className="green" size={18}/>:u.available?<ChevronRight size={18}/>:<span className="pill muted">未上架</span>}</button>)}</div></section>})}
+   <aside>目前可練習：第一階段 12 個單元，共 {totalQuestions} 題。其餘 60 個單元已列入課程路線圖，題庫會分批完成。學習紀錄只保存在目前瀏覽器。</aside>
+  </div>}
+  {page==='lesson'&&unit&&<div className="stack">
+   <button className="link" onClick={goHome}><ArrowLeft size={15}/> 返回課程地圖</button>
+   <div className="chapter-card"><small>LEVEL {currentStage.id} · UNIT {activeUnit}</small><h1>{currentStage.title}：{courseStages.flatMap(s=>s.units).find(u=>u.id===activeUnit)?.title}</h1><p className="chapter-hint">建議時間 {unit.minutes} 分鐘 · 先學單字，再看文法，最後完成練習。</p></div>
+   <section className="home-vocab"><div className="home-vocab-head"><div><label>TODAY'S VOCABULARY</label><h2>本單元核心單字</h2><p>先熟悉以下單字與例句，再開始作答。</p></div><span>{unit.words.length} WORDS</span></div>{unit.words.map((w,i)=><div className="vocab-entry" key={w.word}><div><b>{w.word}</b><small>{w.pos} · {w.meaning}</small></div><p>{w.example}</p><small>{w.translation}</small></div>)}</section>
+   <section className="chapter-card"><small>GRAMMAR FOCUS</small><h2>{unit.grammarTitle}</h2><p className="lesson-text">{unit.grammar}</p><div className="lesson-example">{unit.examples.map(e=><p key={e}>{e}</p>)}</div><aside>本課目標：{unit.goal}</aside></section>
+   <section className="chapter-card"><div className="row"><div><h2>單元練習</h2><p className="chapter-hint">6 題核心題 + 最多 2 題錯題複習；包含選擇題與填空題。</p></div><Clock3 color="#2676a8"/></div><button className="primary wide" onClick={startQuiz}>開始練習 <ChevronRight size={17}/></button></section>
+  </div>}
+  {page==='quiz'&&current&&<div className="stack">
+   <div className="qtop"><button className="link" onClick={()=>setPage(sessionKind==='review'?'home':'lesson')}><ArrowLeft size={15}/> 返回</button><span>{sessionKind==='review'?'錯題複習':'UNIT '+activeUnit} · {index+1}/{session.length}</span></div>
+   <div className="track"><i style={{width:((index+1)/session.length*100)+'%'}}/></div>
+   <div className="question"><small>{current.type==='choice'?'MULTIPLE CHOICE':'FILL IN THE BLANK'} · {current.conceptId}</small><h2>{current.prompt}</h2><p className="question-zh">{current.chinese}</p></div>
+   {current.type==='choice'?<div className="options">{current.choices?.map((option,i)=><button key={option} className={answer===option?'chosen':''} onClick={()=>setAnswer(option)}><span>{String.fromCharCode(65+i)}</span>{option}{answer===option&&<CheckCircle2 size={18}/>}</button>)}</div>:<div className="blank-answer"><label>輸入英文答案</label><input value={answer} onChange={e=>setAnswer(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&answer.trim())submitAnswer(answer)}} placeholder="Type your answer here" autoComplete="off"/><small>請輸入完整單字或正確動詞形式。</small></div>}
+   <div className="actions"><button className="link" onClick={()=>submitAnswer('')}>跳過（視為答錯）</button><button className="primary" disabled={!answer.trim()} onClick={()=>submitAnswer(answer)}>{index===session.length-1?'完成作答':'下一題'} <ChevronRight size={17}/></button></div>
+   <p className="hint">答錯的觀念會進入複習池；連續答對 3 道不同題目後才算掌握。</p>
+  </div>}
+  {page==='result'&&<div className="stack">
+   <div className="score"><div className="ring">{Math.round(sessionScore/Math.max(1,results.length)*100)}<small>%</small></div><h1>{sessionScore}/{results.length} 題答對</h1><p>{sessionKind==='unit'?(sessionScore/Math.max(1,results.length)>=0.8?'達到單元通過標準。':'尚未達到 80% 通過標準，建議再練習一次。'):'錯題複習結果已更新。'}</p></div>
+   {results.map((r,i)=><section className="explain" key={r.question.id}><div className="explainhead"><span>QUESTION {i+1} · {r.question.type==='fill'?'填空':'選擇'}</span><b className={r.correct?'green':'red'}>{r.correct?'CORRECT':'REVIEW'}</b></div><h3>{r.question.prompt}</h3><p>你的答案：<b>{r.answer||'未作答'}</b></p><p>正確答案：<b className="green">{r.question.answer}</b></p><p>{r.question.explanation}</p><p className="lesson-translation">{r.question.chinese}</p></section>)}
+   <section className="chapter-card"><h2>觀念掌握狀態</h2>{Object.entries(store.concepts).filter(([id])=>results.some(r=>r.question.conceptId===id)).map(([id,v])=><div className="mastery" key={id}><div><b>{id}</b><small>連續答對 {v.streak}/3 次</small></div><span>{v.mastered?'已掌握':'待複習'}</span></div>)}</section>
+   <button className="primary wide" onClick={goHome}>返回學習首頁</button>
+   {pending>0&&<button className="link wide" onClick={beginReview}>繼續複習錯誤觀念 ({pending})</button>}
+  </div>}
+  {page==='progress'&&<div className="stack"><h1>學習進度</h1><section className="goal-card"><small>COURSE COMPLETION</small><h2>{store.completedUnits.length}/{courseUnitCount}</h2><div className="goal-progress"><i style={{width:(store.completedUnits.length/courseUnitCount*100)+'%'}}/></div><p>完成單元需達 80% 正確率。錯題觀念另外計算掌握度。</p></section><section className="goal-card"><small>QUESTION BANK</small><h2>{publishedUnitCount}/{courseUnitCount}</h2><p>已完成題庫建置的單元數；目前上架 {totalQuestions} 題。</p></section><section className="goal-card"><small>MASTERY</small><h2>{mastered} 個已掌握</h2><p>{pending} 個觀念仍需複習。每個觀念需連續答對 3 道不同題目。</p></section>{courseStages.map(s=>{const p=stageProgress(s.id);return <section className="chapter-list" key={s.id}><div className="row"><b>{s.title}</b><span>{p.done}/{p.total}</span></div><div className="goal-progress"><i style={{width:p.done/p.total*100+'%'}}/></div></section>})}<button className="reset" onClick={()=>{if(confirm('確定要清除 V3 的所有學習紀錄嗎？此操作無法復原。')){setStore(emptyStore);localStorage.removeItem(STORAGE_KEY)}}}>清除本版學習紀錄</button></div>}
   </main>
-  <nav><button className={page==='home'?'active':''} onClick={()=>setPage('home')}><Home/>章節</button><button className={page==='progress'?'active':''} onClick={()=>setPage('progress')}><ChartNoAxesCombined/>分析</button></nav>
+  <nav><button className={page==='home'?'active':''} onClick={goHome}><Home/><span>首頁</span></button><button className={page==='progress'?'active':''} onClick={()=>setPage('progress')}><Target/><span>進度</span></button><button onClick={beginReview}><RotateCcw/><span>錯題複習</span></button></nav>
  </div>
 }
