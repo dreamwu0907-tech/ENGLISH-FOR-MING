@@ -56,9 +56,12 @@ export default function App(){
   setStore(old=>{
    const concepts={...old.concepts}
    items.forEach(({question,correct})=>{
-    const prev=concepts[question.conceptId]||{streak:0,lastId:null,mastered:false,attempts:0}
-    const nextStreak=correct?(prev.lastId!==question.id?prev.streak+1:prev.streak):0
-    concepts[question.conceptId]={streak:nextStreak,lastId:question.id,mastered:prev.mastered||nextStreak>=3,attempts:prev.attempts+1}
+    const prev=concepts[question.conceptId]||{streak:0,recentIds:[],mastered:false,attempts:0}
+    const recentIds=prev.recentIds||[]
+    const isNewQuestion=!recentIds.includes(question.id)
+    const nextStreak=correct?(isNewQuestion?prev.streak+1:prev.streak):0
+    const nextRecent=correct?(isNewQuestion?[...recentIds,question.id]:recentIds):[question.id]
+    concepts[question.conceptId]={streak:nextStreak,recentIds:nextRecent,mastered:prev.mastered||nextStreak>=3,attempts:prev.attempts+1}
    })
    const passed=sessionKind==='unit'&&items.length>0&&right/items.length>=0.8
    const completed=passed?Array.from(new Set([...old.completedUnits,activeUnit])):old.completedUnits
