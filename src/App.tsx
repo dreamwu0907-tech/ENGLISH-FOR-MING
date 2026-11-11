@@ -3,14 +3,18 @@ import {ArrowLeft,BookOpen,CheckCircle2,ChevronRight,Clock3,GraduationCap,Home,R
 import {courseStages,courseUnitCount,publishedUnitCount} from './data/courseV3Roadmap'
 import {lessons as juniorLessons,getLesson as getJuniorLesson} from './data/courseV3Lessons'
 import {highSchoolLessons} from './data/courseV3HighSchoolLessons'
-import {questionBank as juniorQuestionBank,questionsForUnit as juniorQuestionsForUnit,questionsForConcept as juniorQuestionsForConcept,type Question} from './data/courseV3Questions'
+import {questionBank as juniorQuestionBank,type Question} from './data/courseV3Questions'
 import {highSchoolQuestions} from './data/courseV3HighSchoolQuestions'
 
 type ConceptState={streak:number;recentIds:string[];mastered:boolean;attempts:number}
 type Store={completedUnits:number[];concepts:Record<string,ConceptState>;answered:number;correct:number;studySeconds:number;attempts:number;wrong:number}
 type Page='home'|'lesson'|'quiz'|'result'|'progress'
 type Result={question:Question;answer:string;correct:boolean}
-const lessons=[...juniorLessons,...highSchoolLessons]\nconst questionBank=[...juniorQuestionBank,...highSchoolQuestions]\nconst questionsForUnit=(id:number)=>questionBank.filter(q=>q.unitId===id)\nconst questionsForConcept=(id:string)=>questionBank.filter(q=>q.conceptId===id)\nconst STORAGE_KEY='english-for-ming-v3'
+const lessons=[...juniorLessons,...highSchoolLessons]
+const questionBank=[...juniorQuestionBank,...highSchoolQuestions]
+const questionsForUnit=(id:number)=>questionBank.filter(q=>q.unitId===id)
+const questionsForConcept=(id:string)=>questionBank.filter(q=>q.conceptId===id)
+const STORAGE_KEY='english-for-ming-v3'
 const emptyStore:Store={completedUnits:[],concepts:{},answered:0,correct:0,studySeconds:0,attempts:0,wrong:0}
 const readStore=():Store=>{try{const raw=localStorage.getItem(STORAGE_KEY);return raw?{...emptyStore,...JSON.parse(raw)}:emptyStore}catch{return emptyStore}}
 const normal=(s:string)=>s.trim().toLowerCase().replace(/[.!?]+$/,'')
