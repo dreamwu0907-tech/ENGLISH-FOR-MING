@@ -43,8 +43,8 @@ export default function App(){
  const remainingMinutes=remainingUnits*15+pending*2
  const totalQuestions=questionBank.length
  const bankPercent=Math.round(publishedUnitCount/courseUnitCount*100)
- const juniorHighDone=courseStages[0].units.filter(u=>store.completedUnits.includes(u.id)).length
- const nextStagePrompt=false
+ const highSchoolDone=courseStages[1].units.filter(u=>store.completedUnits.includes(u.id)).length
+ const nextStagePrompt=highSchoolDone>=9
  const stageProgress=(id:number)=>{const s=courseStages[id-1];const done=s.units.filter(u=>store.completedUnits.includes(u.id)).length;return {done,total:s.units.length}}
  const beginUnit=(id:number)=>{
   setActiveUnit(id);setSessionKind('unit')
@@ -90,7 +90,7 @@ export default function App(){
   <main>
   {page==='home'&&<div className="stack">
    <section className="hero"><label>YOUR ENGLISH ROADMAP</label><h1>從英文基礎，穩定走向 TOEIC 800</h1><p>不設定每日限制。每個單元約 15–20 分鐘，依自己的時間完成；錯誤觀念會持續安排新題複習。</p><button className="primary" onClick={()=>beginUnit(Array.from({length:24},(_,i)=>i+1).find(id=>!store.completedUnits.includes(id))||1)}><BookOpen size={17}/> {store.completedUnits.length?'繼續學習':'開始第一單元'}</button></section>
-   {nextStagePrompt&&<section className="chapter-card" style={{border:"1px solid #9bc7df",background:"#f2f8fc"}}><div className="row"><div><small>NEXT QUESTION BANK MILESTONE</small><h2>國中基礎已完成 {juniorHighDone}/12 單元（{Math.round(juniorHighDone/12*100)}%）</h2><p className="chapter-hint">已達 75% 建置門檻。請回到目前這個 ChatGPT 對話框，告訴我「開始更新下一階段題庫」，我會接續建置高中基礎題庫並更新網站。這個提醒不會自動觸發 GitHub 更新。</p></div><CheckCircle2 color="#2676a8"/></div></section>}
+   {nextStagePrompt&&<section className="chapter-card" style={{border:"1px solid #9bc7df",background:"#f2f8fc"}}><div className="row"><div><small>NEXT QUESTION BANK MILESTONE</small><h2>高中基礎已完成 {highSchoolDone}/12 單元（{Math.round(highSchoolDone/12*100)}%）</h2><p className="chapter-hint">已達 75% 建置門檻。請回到目前這個 ChatGPT 對話框，告訴我「開始更新下一階段題庫」，我會接續建置中級英文題庫並更新網站。這個提醒不會自動觸發 GitHub 更新。</p></div><CheckCircle2 color="#2676a8"/></div></section>}
    <div className="stats">
     <article><small>已完成單元</small><b>{store.completedUnits.length}<small style={{display:'inline',fontSize:12,color:'#8293a2'}}> / 72</small></b></article>
     <article><small>整體答題正確率</small><b>{accuracy}%</b></article>
