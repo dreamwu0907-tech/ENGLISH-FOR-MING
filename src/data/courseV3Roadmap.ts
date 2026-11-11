@@ -9,6 +9,6 @@ const titles = [
  ['高階字彙語境判斷','進階文法混合題','Part 5 限時精準度','Part 6 篇章邏輯','Part 7 細節定位','Part 7 推論與目的','多文件交叉比對','長篇閱讀速度訓練','聽力題型預備知識','閱讀模擬測驗一','閱讀模擬測驗二','TOEIC 800 目標總複習']
 ]
 const meta=[['國中基礎','A1','建立基本句型、常用字彙與簡單閱讀能力。'],['高中基礎','A2','掌握主要時態、常見句型及生活情境溝通。'],['中級英文','B1','理解較長句構、進階文法與職場文本。'],['多益入門','B1–B2','熟悉 TOEIC 題型、商務情境及解題基礎。'],['多益進階','B2','強化商務字彙、長篇閱讀及跨文件理解。'],['多益 800 衝刺','B2+','提升速度、準確度、推論能力與應試穩定度。']]
-export const courseStages:CourseStage[]=titles.map((list,i)=>({id:i+1,title:meta[i][0],range:meta[i][1],goal:meta[i][2],units:list.map((title,j)=>({id:i*12+j+1,stage:i+1,title,objective:meta[i][2],available:i===0}))}))
+export const courseStages:CourseStage[]=titles.map((list,i)=>({id:i+1,title:meta[i][0],range:meta[i][1],goal:meta[i][2],units:list.map((title,j)=>({id:i*12+j+1,stage:i+1,title,objective:meta[i][2],available:i<=1}))}))
 export const courseUnitCount=72
-export const publishedUnitCount=12
+export const publishedUnitCount=24
