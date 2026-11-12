@@ -5,8 +5,9 @@ import {lessons as juniorLessons,getLesson as getJuniorLesson} from './data/cour
 import {highSchoolLessons} from './data/courseV3HighSchoolLessons'
 import {questionBank as juniorQuestionBank,type Question} from './data/courseV3Questions'
 import {highSchoolQuestions} from './data/courseV3HighSchoolQuestions'
+import {dueConceptEntries, normalizeConceptState, recordConceptAnswer} from './learning/smartLearning'
 
-type ConceptState={streak:number;recentIds:string[];mastered:boolean;attempts:number}
+type ConceptState=ReturnType<typeof normalizeConceptState>
 type Store={completedUnits:number[];concepts:Record<string,ConceptState>;answered:number;correct:number;studySeconds:number;attempts:number;wrong:number}
 type Page='home'|'lesson'|'quiz'|'result'|'progress'
 type Result={question:Question;answer:string;correct:boolean}
@@ -16,9 +17,9 @@ const questionsForUnit=(id:number)=>questionBank.filter(q=>q.unitId===id)
 const questionsForConcept=(id:string)=>questionBank.filter(q=>q.conceptId===id)
 const STORAGE_KEY='english-for-ming-v3'
 const emptyStore:Store={completedUnits:[],concepts:{},answered:0,correct:0,studySeconds:0,attempts:0,wrong:0}
-const readStore=():Store=>{try{const raw=localStorage.getItem(STORAGE_KEY);return raw?{...emptyStore,...JSON.parse(raw)}:emptyStore}catch{return emptyStore}}
+const readStore=():Store=>{try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return emptyStore;const parsed=JSON.parse(raw) as Partial<Store>;const concepts=Object.fromEntries(Object.entries(parsed.concepts||{}).map(([id,state])=>[id,normalizeConceptState(state as Partial<ConceptState>)]));return {...emptyStore,...parsed,concepts}}catch{return emptyStore}}
 const normal=(s:string)=>s.trim().toLowerCase().replace(/[.!?]+$/,'')
-const dueConcepts=(store:Store)=>Object.entries(store.concepts).filter(([,v])=>!v.mastered)
+const dueConcepts=(store:Store)=>dueConceptEntries(store.concepts)
 const reviewQuestions=(store:Store,limit=10)=>dueConcepts(store).slice(0,limit).map(([concept,state])=>{const pool=questionsForConcept(concept);const seen=state.recentIds||[];return pool.find(q=>!seen.includes(q.id))||pool[0]}).filter(Boolean) as Question[]
 
 export default function App(){
@@ -64,12 +65,8 @@ export default function App(){
   setStore(old=>{
    const concepts={...old.concepts}
    items.forEach(({question,correct})=>{
-    const prev=concepts[question.conceptId]||{streak:0,recentIds:[],mastered:false,attempts:0}
-    const recentIds=prev.recentIds||[]
-    const isNewQuestion=!recentIds.includes(question.id)
-    const nextStreak=correct?(isNewQuestion?prev.streak+1:prev.streak):0
-    const nextRecent=correct?(isNewQuestion?[...recentIds,question.id]:recentIds):[question.id]
-    concepts[question.conceptId]={streak:nextStreak,recentIds:nextRecent,mastered:prev.mastered||nextStreak>=3,attempts:prev.attempts+1}
+    const prev=concepts[question.conceptId]||normalizeConceptState({})
+    concepts[question.conceptId]=recordConceptAnswer(prev,question.id,correct)
    })
    const passed=sessionKind==='unit'&&items.length>0&&right/items.length>=0.8
    const completed=passed?Array.from(new Set([...old.completedUnits,activeUnit])):old.completedUnits
@@ -100,7 +97,7 @@ export default function App(){
    <section className="goal-card"><div><small>COURSE PROGRESS</small><h2>{Math.round(store.completedUnits.length/courseUnitCount*100)}%</h2><p>課程完成度 · {store.completedUnits.length} / {courseUnitCount} 個單元</p></div><div className="goal-progress"><i style={{width:(store.completedUnits.length/courseUnitCount*100)+'%'}}/></div><div className="milestones"><span>國中基礎</span><b>TOEIC 800</b><span>彈性學習</span></div></section>
    <section className="goal-card"><div><small>QUESTION BANK STATUS</small><h2>{publishedUnitCount} / {courseUnitCount} 單元</h2><p>目前已上架國中與高中基礎題庫；其餘階段依序建置，不會把尚未完成的題目算成已完成。</p></div><div className="goal-progress"><i style={{width:bankPercent+'%'}}/></div><p style={{marginTop:8}}>題庫架構完成度 {bankPercent}% · 尚有 {courseUnitCount-publishedUnitCount} 個單元待編寫</p></section>
    <section className="goal-card"><div><small>ESTIMATED STUDY TIME LEFT</small><h2>{Math.floor(remainingMinutes/60)} 小時 {remainingMinutes%60} 分</h2><p>以每單元 15 分鐘估算，另計待複習觀念。因採彈性學習，不預設完成日期。</p></div><div className="row"><span style={{fontSize:11,color:'#718494'}}>累計學習時間</span><b>{Math.floor(store.studySeconds/3600)} 小時 {Math.floor(store.studySeconds%3600/60)} 分</b></div></section>
-   {pending>0&&<section className="chapter-card"><div className="row"><div><h2>錯題觀念複習</h2><p className="chapter-hint">尚有 {pending} 個觀念未達連續答對 3 次。</p></div><RotateCcw color="#2676a8"/></div><button className="primary wide" onClick={beginReview}>開始錯題複習 <ChevronRight size={17}/></button></section>}
+   {pending>0&&<section className="chapter-card"><div className="row"><div><h2>錯題觀念複習</h2><p className="chapter-hint">目前有 {pending} 個未掌握觀念已到複習時間。</p></div><RotateCcw color="#2676a8"/></div><button className="primary wide" onClick={beginReview}>開始錯題複習 <ChevronRight size={17}/></button></section>}
    <div className="row"><h2>完整課程地圖</h2><span className="pill">6 階段 · 72 單元</span></div>
    {courseStages.map(stage=>{const p=stageProgress(stage.id);return <section className="chapter-list" key={stage.id}><div className="chapter-heading"><div><small>LEVEL {stage.id} · {stage.range}</small><h1>{stage.title}</h1><p>{stage.goal}</p></div><div className="chapter-count">{p.done}/{p.total}</div></div><div className="goal-progress"><i style={{width:(p.done/p.total*100)+'%'}}/></div><div className="unit-list">{stage.units.map(u=><button key={u.id} className={'unit-row '+(u.available?'':'locked')} disabled={!u.available} onClick={()=>beginUnit(u.id)}><span className="unit-number">{String(u.id).padStart(2,'0')}</span><span className="unit-name">{u.title}<small>{u.available?'約 15–20 分鐘 · 單字、文法、選擇與填空':'題庫編寫中'}</small></span>{store.completedUnits.includes(u.id)?<CheckCircle2 className="green" size={18}/>:u.available?<ChevronRight size={18}/>:<span className="pill muted">未上架</span>}</button>)}</div></section>})}
    <aside>目前可練習：國中基礎與高中基礎共 24 個單元、{totalQuestions} 題。其餘 48 個單元已列入課程路線圖，題庫會分批完成。學習紀錄只保存在目前瀏覽器。</aside>
@@ -118,7 +115,7 @@ export default function App(){
    <div className="question"><small>{current.type==='choice'?'MULTIPLE CHOICE':'FILL IN THE BLANK'} · {current.conceptId}</small><h2>{current.prompt}</h2><p className="question-zh">{current.chinese}</p></div>
    {current.type==='choice'?<div className="options">{current.choices?.map((option,i)=><button key={option} className={answer===option?'chosen':''} onClick={()=>setAnswer(option)}><span>{String.fromCharCode(65+i)}</span>{option}{answer===option&&<CheckCircle2 size={18}/>}</button>)}</div>:<div className="blank-answer"><label>輸入英文答案</label><input value={answer} onChange={e=>setAnswer(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&answer.trim())submitAnswer(answer)}} placeholder="Type your answer here" autoComplete="off"/><small>請輸入完整單字或正確動詞形式。</small></div>}
    <div className="actions"><button className="link" onClick={()=>submitAnswer('')}>跳過（視為答錯）</button><button className="primary" disabled={!answer.trim()} onClick={()=>submitAnswer(answer)}>{index===session.length-1?'完成作答':'下一題'} <ChevronRight size={17}/></button></div>
-   <p className="hint">答錯的觀念會進入複習池；連續答對 3 道不同題目後才算掌握。</p>
+   <p className="hint">答錯的觀念會進入複習池；連續答對不同題目並累積掌握分數後，系統會標記已掌握；答錯會在 10 分鐘後重新安排。</p>
   </div>}
   {page==='result'&&<div className="stack">
    <div className="score"><div className="ring">{Math.round(sessionScore/Math.max(1,results.length)*100)}<small>%</small></div><h1>{sessionScore}/{results.length} 題答對</h1><p>{sessionKind==='unit'?(sessionScore/Math.max(1,results.length)>=0.8?'達到單元通過標準。':'尚未達到 80% 通過標準，建議再練習一次。'):'錯題複習結果已更新。'}</p></div>
@@ -127,7 +124,7 @@ export default function App(){
    <button className="primary wide" onClick={goHome}>返回學習首頁</button>
    {pending>0&&<button className="link wide" onClick={beginReview}>繼續複習錯誤觀念 ({pending})</button>}
   </div>}
-  {page==='progress'&&<div className="stack"><h1>學習進度</h1><section className="goal-card"><small>COURSE COMPLETION</small><h2>{store.completedUnits.length}/{courseUnitCount}</h2><div className="goal-progress"><i style={{width:(store.completedUnits.length/courseUnitCount*100)+'%'}}/></div><p>完成單元需達 80% 正確率。錯題觀念另外計算掌握度。</p></section><section className="goal-card"><small>QUESTION BANK</small><h2>{publishedUnitCount}/{courseUnitCount}</h2><p>已完成題庫建置的單元數；目前上架 {totalQuestions} 題。</p></section><section className="goal-card"><small>MASTERY</small><h2>{mastered} 個已掌握</h2><p>{pending} 個觀念仍需複習。每個觀念需連續答對 3 道不同題目。</p></section>{courseStages.map(s=>{const p=stageProgress(s.id);return <section className="chapter-list" key={s.id}><div className="row"><b>{s.title}</b><span>{p.done}/{p.total}</span></div><div className="goal-progress"><i style={{width:p.done/p.total*100+'%'}}/></div></section>})}<button className="reset" onClick={()=>{if(confirm('確定要清除 V3 的所有學習紀錄嗎？此操作無法復原。')){setStore(emptyStore);localStorage.removeItem(STORAGE_KEY)}}}>清除本版學習紀錄</button></div>}
+  {page==='progress'&&<div className="stack"><h1>學習進度</h1><section className="goal-card"><small>COURSE COMPLETION</small><h2>{store.completedUnits.length}/{courseUnitCount}</h2><div className="goal-progress"><i style={{width:(store.completedUnits.length/courseUnitCount*100)+'%'}}/></div><p>完成單元需達 80% 正確率。錯題觀念另外計算掌握度。</p></section><section className="goal-card"><small>QUESTION BANK</small><h2>{publishedUnitCount}/{courseUnitCount}</h2><p>已完成題庫建置的單元數；目前上架 {totalQuestions} 題。</p></section><section className="goal-card"><small>MASTERY</small><h2>{mastered} 個已掌握</h2><p>{pending} 個觀念仍需複習。系統依答題正確度、連續答對次數及複習間隔更新掌握狀態。</p></section>{courseStages.map(s=>{const p=stageProgress(s.id);return <section className="chapter-list" key={s.id}><div className="row"><b>{s.title}</b><span>{p.done}/{p.total}</span></div><div className="goal-progress"><i style={{width:p.done/p.total*100+'%'}}/></div></section>})}<button className="reset" onClick={()=>{if(confirm('確定要清除 V3 的所有學習紀錄嗎？此操作無法復原。')){setStore(emptyStore);localStorage.removeItem(STORAGE_KEY)}}}>清除本版學習紀錄</button></div>}
   </main>
   <nav><button className={page==='home'?'active':''} onClick={goHome}><Home/><span>首頁</span></button><button className={page==='progress'?'active':''} onClick={()=>setPage('progress')}><Target/><span>進度</span></button><button onClick={beginReview}><RotateCcw/><span>錯題複習</span></button></nav>
  </div>
