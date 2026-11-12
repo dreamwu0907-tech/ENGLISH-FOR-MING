@@ -30,6 +30,7 @@ export default function App(){
  const [sessionKind,setSessionKind]=useState<'unit'|'review'>('unit')
  const [index,setIndex]=useState(0)
  const [answer,setAnswer]=useState('')
+ const [feedback,setFeedback]=useState<Result|null>(null)
  const [results,setResults]=useState<Result[]>([])
  const [sessionStart,setSessionStart]=useState(0)
  const [sessionScore,setSessionScore]=useState(0)
@@ -51,14 +52,14 @@ export default function App(){
   setActiveUnit(id);setSessionKind('unit')
   const base=questionsForUnit(id)
   const due=reviewQuestions(store,2).filter(q=>!base.some(b=>b.id===q.id))
-  setSession([...base,...due]);setIndex(0);setAnswer('');setResults([]);setSessionStart(Date.now());setPage('lesson')
+  setSession([...base,...due]);setIndex(0);setAnswer('');setFeedback(null);setResults([]);setSessionStart(Date.now());setPage('lesson')
  }
  const beginReview=()=>{
   const qs=reviewQuestions(store,12)
   if(!qs.length)return
-  setSession(qs);setSessionKind('review');setIndex(0);setAnswer('');setResults([]);setSessionStart(Date.now());setPage('quiz')
+  setSession(qs);setSessionKind('review');setIndex(0);setAnswer('');setFeedback(null);setResults([]);setSessionStart(Date.now());setPage('quiz')
  }
- const startQuiz=()=>{setIndex(0);setAnswer('');setPage('quiz')}
+ const startQuiz=()=>{setIndex(0);setAnswer('');setFeedback(null);setPage('quiz')}
  const finish=(items:Result[])=>{
   setResults(items);const right=items.filter(x=>x.correct).length;setSessionScore(right)
   const elapsed=Math.max(0,Math.round((Date.now()-sessionStart)/1000))
@@ -75,9 +76,15 @@ export default function App(){
   setPage('result')
  }
  const submitAnswer=(value:string)=>{
+  if(!current||feedback)return
   const thisResult:Result={question:current,answer:value,correct:current.type==='fill'?normal(value)===normal(current.answer):value===current.answer}
-  const all=[...results,thisResult]
-  if(index+1<session.length){setResults(all);setIndex(index+1);setAnswer('')}
+  setFeedback(thisResult)
+ }
+ const continueAfterFeedback=()=>{
+  if(!feedback)return
+  const all=[...results,feedback]
+  setFeedback(null);setAnswer('')
+  if(index+1<session.length){setResults(all);setIndex(index+1)}
   else finish(all)
  }
  const goHome=()=>{setPage('home');setSession([]);setResults([]);setAnswer('')}
@@ -113,9 +120,20 @@ export default function App(){
    <div className="qtop"><button className="link" onClick={()=>setPage(sessionKind==='review'?'home':'lesson')}><ArrowLeft size={15}/> 返回</button><span>{sessionKind==='review'?'錯題複習':'UNIT '+activeUnit} · {index+1}/{session.length}</span></div>
    <div className="track"><i style={{width:((index+1)/session.length*100)+'%'}}/></div>
    <div className="question"><small>{current.type==='choice'?'MULTIPLE CHOICE':'FILL IN THE BLANK'} · {current.conceptId}</small><h2>{current.prompt}</h2><p className="question-zh">{current.chinese}</p></div>
+   {!feedback?<>
    {current.type==='choice'?<div className="options">{current.choices?.map((option,i)=><button key={option} className={answer===option?'chosen':''} onClick={()=>setAnswer(option)}><span>{String.fromCharCode(65+i)}</span>{option}{answer===option&&<CheckCircle2 size={18}/>}</button>)}</div>:<div className="blank-answer"><label>輸入英文答案</label><input value={answer} onChange={e=>setAnswer(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&answer.trim())submitAnswer(answer)}} placeholder="Type your answer here" autoComplete="off"/><small>請輸入完整單字或正確動詞形式。</small></div>}
-   <div className="actions"><button className="link" onClick={()=>submitAnswer('')}>跳過（視為答錯）</button><button className="primary" disabled={!answer.trim()} onClick={()=>submitAnswer(answer)}>{index===session.length-1?'完成作答':'下一題'} <ChevronRight size={17}/></button></div>
-   <p className="hint">答錯的觀念會進入複習池；連續答對不同題目並累積掌握分數後，系統會標記已掌握；答錯會在 10 分鐘後重新安排。</p>
+   <div className="actions"><button className="link" onClick={()=>submitAnswer('')}>跳過（視為答錯）</button><button className="primary" disabled={!answer.trim()} onClick={()=>submitAnswer(answer)}>送出答案 <ChevronRight size={17}/></button></div>
+   <p className="hint">送出後會立即顯示答案與解析，再由你決定何時進入下一題。</p>
+   </>:<section className={'answer-feedback '+(feedback.correct?'is-correct':'is-wrong')}>
+    <div className="feedback-status"><b>{feedback.correct?'回答正確':'這題答錯了'}</b><span>{feedback.correct?'已記錄本題表現':'此觀念會安排再次複習'}</span></div>
+    <div className="feedback-block"><small>你的答案</small><b>{feedback.answer||'未作答（已跳過）'}</b></div>
+    <div className="feedback-block"><small>正確答案</small><b className="green">{feedback.question.answer}</b></div>
+    <div className="feedback-block"><small>解題關鍵／文法規則</small><p>{feedback.question.explanation}</p></div>
+    {feedback.question.type==='choice'&&<div className="feedback-block"><small>選項辨析</small><div className="feedback-options">{feedback.question.choices?.map((option,i)=><div className={option===feedback.question.answer?'option-correct':option===feedback.answer?'option-selected-wrong':''} key={option}><b>{String.fromCharCode(65+i)}. {option}</b><span>{option===feedback.question.answer?'正確答案':option===feedback.answer?'你選擇的答案：不符合本題規則':'其他干擾選項'}</span></div>)}</div><p className="feedback-note">判斷其他選項時，請回到上方的文法規則；不要只靠中文直覺選答案。</p></div>}
+    <div className="feedback-block"><small>完整句意</small><p>{feedback.question.chinese}</p></div>
+    {feedback.question.type==='fill'&&<div className="feedback-block"><small>填空後的完整答案</small><b>{feedback.question.prompt.replace(/_{2,}/,feedback.question.answer)}</b></div>}
+    <button className="primary wide" onClick={continueAfterFeedback}>{index===session.length-1?'完成本次練習':'看懂了，下一題'} <ChevronRight size={17}/></button>
+   </section>}
   </div>}
   {page==='result'&&<div className="stack">
    <div className="score"><div className="ring">{Math.round(sessionScore/Math.max(1,results.length)*100)}<small>%</small></div><h1>{sessionScore}/{results.length} 題答對</h1><p>{sessionKind==='unit'?(sessionScore/Math.max(1,results.length)>=0.8?'達到單元通過標準。':'尚未達到 80% 通過標準，建議再練習一次。'):'錯題複習結果已更新。'}</p></div>
