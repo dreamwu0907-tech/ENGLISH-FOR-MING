@@ -23,7 +23,7 @@ export function normalizeConceptState(value: Partial<AdaptiveConceptState> & {st
     wrongCount:value.wrongCount ?? 0,
     masteryScore:value.masteryScore ?? (value.mastered ? 85 : 0),
     intervalDays:value.intervalDays ?? 0,
-    dueAt:value.dueAt ?? 0,
+    dueAt:value.dueAt ?? (value.mastered ? Date.now()+30*86400000 : 0),
     lastReviewedAt:value.lastReviewedAt ?? 0,
   };
 }
@@ -45,7 +45,7 @@ export function recordConceptAnswer(
   const dueAt=correct ? now+intervalDays*86400000 : now+10*60000;
   const recentIds=[...state.recentIds.filter(id=>id!==questionId),questionId].slice(-6);
   return {
-    streak,recentIds,mastered:state.mastered || (streak>=3 && masteryScore>=24),
+    streak,recentIds,mastered:correct ? (state.mastered || (streak>=3 && masteryScore>=24)) : false,
     attempts:state.attempts+1,
     correctCount:state.correctCount+(correct?1:0),
     wrongCount:state.wrongCount+(correct?0:1),
@@ -55,6 +55,6 @@ export function recordConceptAnswer(
 
 export function dueConceptEntries<T extends {dueAt?:number;mastered?:boolean}>(concepts:Record<string,T>,now=Date.now()) {
   return Object.entries(concepts)
-    .filter(([,state])=>!state.mastered && (state.dueAt ?? 0)<=now)
+    .filter(([,state])=>(state.dueAt ?? 0)<=now)
     .sort((a,b)=>(a[1].dueAt??0)-(b[1].dueAt??0));
 }
